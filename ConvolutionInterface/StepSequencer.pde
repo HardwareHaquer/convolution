@@ -323,10 +323,10 @@ public StepSequencer(String _matrixName){
           // 0 corresponds to the button is on, and thus the mode of the synthesizer changes to jumping, rather than sliding.
   slide_mode.addCallback(new CallbackListener(){
     public void controlEvent(CallbackEvent bEvent){
-      int value;
+      float value;
       if (bEvent.getAction() == ControlP5.ACTION_PRESS){
         if (slide_mode.getBooleanValue()) value = 1;  //After the button is pressed, the boolean value immediately changes, so when checking the boolean 
-        else value = 0;                               // after the button is switched from off to on, the boolean retruns true.
+        else value = 0.5;                               // after the button is switched from off to on, the boolean retruns true.
         OscMessage slideMessage = new OscMessage("/Slide");
         slideMessage.add(value);
         

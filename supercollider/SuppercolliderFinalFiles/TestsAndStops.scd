@@ -23,11 +23,11 @@ SynthDef(\sawpulse, { |out, freq = 440, gate = 0.5, plfofreq = 6, mw = 0, ffreq 
 )
 (
 ~stepstep.stop;
-~stepstep = PmonoArtic(\funSynth, \dur, 0.125, \degree, Pseq([0,0, 1,3,5,7],inf), \legato, 1.0 ).play(quant: 0);
+~stepstep = PmonoArtic(\sawpulse, \dur, 0.125, \degree, Pseq([0,0, 1,3,5,7],inf), \legato, 1.0 ).play(quant: 0);
 )
 (
 ~stepstep.stop;
-~stepstep = PmonoArtic(\sawpulse, \dur, 0.125, \degree, Pseq([7,6, 5,3,1,0, 1],inf), \legato, Pseq([1,1,0.5,0.5], inf) ).play(quant: 0);
+~stepstep = PmonoArtic(\sawpulse, \dur, 0.125, \degree, Pseq([7,6, 5,3,1,0, 1],inf), \legato, 0.5 ).play(quant: 0);
 )
 ~stepstep =  PmonoArtic(\sawpulse, \dur, 0.125, \degree, ~stepSeqDegrees, \root, ~rootNotesDegrees, \legato, 1.0, \amp, Pfunc{~testSeqAmp} ).play(t, quant: 1);
 

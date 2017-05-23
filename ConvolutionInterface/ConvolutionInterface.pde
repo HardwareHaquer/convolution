@@ -18,7 +18,7 @@ import oscP5.*;
 
 // which serial device to use. this is an index into the list
 // of serial devices printed when this program runs. 
-int SERIAL_PORT = 0;
+int SERIAL_PORT = 5;
 int BAUD = 1843200; // baud rate of the serial device
 
 // the OSC server to talk to
@@ -139,7 +139,7 @@ void setup() {
   osc = new OscP5(this, 12001);
   address = new NetAddress(HOST, PORT);
  // port = new Serial(this, Serial.list()[SERIAL_PORT], BAUD);
-  port = new Serial(this, Serial.list()[SERIAL_PORT], BAUD);
+  port = new Serial(this, Serial.list()[Serial.list().length -2], BAUD);
   port.bufferUntil('\n');
   //==============================================
   
