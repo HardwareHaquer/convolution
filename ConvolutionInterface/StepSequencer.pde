@@ -277,9 +277,10 @@ public StepSequencer(String _matrixName){
     .setSize(200, 20)
     .setRange(0, 1)
     .setValueSelf(1.00)
-    .setNumberOfTickMarks(4)
-    .setSliderMode(Slider.FLEXIBLE)
+    .setNumberOfTickMarks(11)
+    .setSliderMode(Slider.FIX)
     .setDecimalPrecision(2)
+    .snapToTickMarks(false);
   ;
     
   random = cp5.addButton("random")
@@ -514,26 +515,32 @@ void randomize(){
 
 
   void setSeqSteps(HardwareInput a, int column){
-    boolean pushedButton = false;
+    boolean pushedButton = false;          //Keeps track of whether the cell in question was active when the corresponding button was pushed.
+    
     int encPos = ((int)a.encoders[0] % 5) + 1;
-    stepCount.setValue(encPos);
-    for(int i = 0; i < a.pads.length; i++){
+    stepCount.setValue(encPos);            //Alows the tall rotary encoder to change the value of the stepCount Slider.
+    
+    float[] knobsList = a.getKnobs();
+    float volumeKnob = knobsList[0] / 4000; //Allows the smooth knob to changed the value of the volume slider.
+    volume.setValue(volumeKnob);            // Used 4000 because that seems to be the max value of the knob.
+    
+    for(int i = 0; i < a.pads.length; i++){//Checks each pad to see if one was pushed.
       if(a.pads[i] == true){
-        if(i % 2 == 0){
+        if(i % 2 == 0){                    //Splits the buttons into two sets of 8, rather than one set of 16
           if(sequencerButtons.get(column, (yNotes - 2) - (i / 2)))
-            pushedButton = true;
-          clearRow(column);
-          if(!pushedButton)
+            pushedButton = true;           //If the cell that matches the button that was pushed was active, set PushedButton to true.
+          clearRow(column);                //Clear the row of the cell that was pushed to ensure only one cell gets activated at a time.
+          if(!pushedButton)                //If the cell that matches the button that was pushed wasn't active, we'll set the cell to active.
             sequencerButtons.set(column, (yNotes - 2) - (i / 2), !sequencerButtons.get(column, (yNotes - 2) - (i / 2)));
-          a.pads[i] = false;
+          a.pads[i] = false;               // Otherwise, we'll leave it off from when we cleared the entire row.
         }
-        else{
+        else{                              //Split the buttons into two sets. This set activates the next row forward.
           if(sequencerButtons.get(column + 1, (yNotes - 2) - (i / 2)))
-            pushedButton = true;
-          clearRow(column + 1);
-          if(!pushedButton)
+            pushedButton = true;          //If the cell that matches the button that was pushed was active, set PushedButton to true.
+          clearRow(column + 1);           //Clear the row of the cell that was pushed to ensure only one cell gets activated at a time.
+          if(!pushedButton)               //If the cell that matches the button that was pushed wasn't active, we'll set the cell to active.
             sequencerButtons.set(column + 1,(yNotes - 2) -  (i / 2), !sequencerButtons.get(column + 1, (yNotes - 2) - (i / 2)));
-          a.pads[i] = false;
+          a.pads[i] = false;              // Otherwise, we'll leave it off from when we cleared the entire row.
         }
       } 
     }
