@@ -33,5 +33,11 @@ Also if running via ssh:<br>
 
 To quit sclang: `0.exit;`
 
-These are steps toward running SC from boot without needing desktop and using openFrameworks as osc interface.
+These are steps toward running SC from boot without needing desktop and using Processing Sketch as osc interface.
+
+<b>Processing</b>
+
+Link to page that details how to use xinit to run Processing sketch without opening desktop:
+https://www.raspberrypi.org/forums/viewtopic.php?f=28&t=86352
+
 
