@@ -450,8 +450,9 @@ void stepCount(float count){
       case("4"):xSteps = 8; break;
       case("5"):xSteps = 16; break;
     }
+    MDHIndex = xSteps;
     if (lastXSteps != xSteps){
-      MDHIndex = xSteps;
+      
       if(xSteps == 3) sequencerButtons.setSize(612,sizeMatrix_Y);  //Fixes an error in the matrix caused by 
       else sequencerButtons.setSize(sizeMatrix_X, sizeMatrix_Y);   // the size of the matrix not being divisible by the number of buttons in it.
       sequencerButtons.setGrid(xSteps,yNotes);
@@ -516,10 +517,10 @@ void randomize(){
 
   void setSeqSteps(HardwareInput a, int column){
     boolean pushedButton = false;          //Keeps track of whether the cell in question was active when the corresponding button was pushed.
-    
+    println("MDHIndex: " +MDHIndex);
     int encPos = ((int)a.encoders[0] % 5) + 1;
     stepCount.setValue(encPos);            //Alows the tall rotary encoder to change the value of the stepCount Slider.
-    
+    println("encoder: "+ encPos);
     float[] knobsList = a.getKnobs();
     float volumeKnob = knobsList[0] / 4000; //Allows the smooth knob to changed the value of the volume slider.
     volume.setValue(volumeKnob);            // Used 4000 because that seems to be the max value of the knob.
@@ -769,13 +770,16 @@ void sendMatrixOsc(){
   *Also draws a rectangle at the bottom as a cursor for which row is highlighed by the buttons.
   */
 void drawExtras(){
-  float counts;                                            //Counts stands for the timer count (modulus)-ed by the current number of horizontal cells.
+  float counts;     //Counts stands for the timer count (modulus)-ed by the current number of horizontal cells.
+ 
   if(!root_notes.getBooleanValue()) counts = cnt % xSteps; // it really just makes it so the if statment doesn't have to cover the entire function while
   else counts = (cnt / xSteps) % (xRootNotes - 1);         // accounting for the differences between rootNote mode and sequencer mode.
   
   int stepper;                                          //Stepper is another intermediary variable, just like counts.
   if(!root_notes.getBooleanValue()) stepper = xSteps;   // It doesn't really serve a purpose other than avoiding writing an entire function inside an if statement.
   else stepper = xRootNotes;
+  //updateSeqRowIndex();
+  if (seqRowIndex > xSteps) seqRowIndex = 0;
   
   float matrixWidth = sequencerButtons.getWidth();
   rectMode(CORNER);
@@ -788,6 +792,19 @@ void drawExtras(){
   rectMode(CORNER);                                                     //This is the same as the above rectangle, just at the bottom, instead of the top.
   fill(100, 215, 40);
   rect(posMatrix_X + buttonSpacing, posMatrix_Y + sizeMatrix_Y, matrixWidth/(stepper), 20);
+  println("seqRowIndex: " + seqRowIndex + "matrix width: " + matrixWidth + " stepper: " + stepper);
+}
+
+void updateSeqRowIndex(){
+  if( arduino.rawEnc2[0] > arduino.rawEnc2[1]){
+       
+       seqRowIndex = (seqRowIndex+1)%(musicMaker.MDHIndex - 1);
+     }else if(arduino.rawEnc2[0] < arduino.rawEnc2[1]){
+       
+       seqRowIndex -= 1;
+       
+       if (seqRowIndex < 0) seqRowIndex = musicMaker.MDHIndex - 2;
+     }
 }
 
 }

@@ -3,8 +3,9 @@ void seqMode(){
   fill(255,0,255);
   musicMaker.setVisibility(true);
   musicMaker.stepCount(cp5.get(Slider.class, "stepCount").getValue());
-  musicMaker.drawExtras();
+  
   musicMaker.setSeqSteps(arduino, seqRowIndex);
+  musicMaker.drawExtras();
   musicMaker.sequencerButtons.update();
   seq.setVisibility(false);
   cp5.getController("seq").hide();
@@ -34,6 +35,7 @@ void leadMode(){
 }
 
 void dmMode(){
+ // println("pad: " + arduino.quadPad[1] + " timeout: " + debounce[1].isFinished());
   musicMaker.setVisibility(false);
   
   seq.setVisibility(true);
