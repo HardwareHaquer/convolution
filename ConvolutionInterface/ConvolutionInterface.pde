@@ -119,12 +119,14 @@ int lastScaleIndex = 0;
 JSONObject json;
 ButtonGroup bs;
 
+int[] modeIndex1 =  new int[3];
+
 //================================================
 //========Setup=================================
 void setup() {
   size(800, 480, P2D);
   frameRate(30);
-  
+  for(int i = 0; i < modeIndex1.length; i++) modeIndex1[i] = 0;
   appletRef = this;
   
   String[] scalesFile = loadStrings("scales.txt");
@@ -288,6 +290,7 @@ void draw() {
     sendRoot();
   }
   if(arduino.enc1Mode == SEQUENCER){// || theMode == SEQUENCER){
+    
     dmMode();
     
   }

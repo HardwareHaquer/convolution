@@ -19,6 +19,7 @@ class HardwareInput{
   boolean[] quadPad;
   int smoothSteps;
   boolean encChangeFlag =false;
+  boolean enc1ChangeFlag = false;
   
   
   
@@ -186,6 +187,7 @@ class HardwareInput{
   }else if(v[0].equals("/rawEnc")){
     rawEnc1[1] = rawEnc1[0];
     rawEnc1[0] = int(trim(v[1]));
+    if (rawEnc1[0] != rawEnc1[1]) enc1ChangeFlag = true;
     
     rawEnc2[1] = rawEnc2[0];
     rawEnc2[0] = int(trim(v[2]));
@@ -218,6 +220,7 @@ void updateCurrInst(){
        //if(listIndex < 0) listIndex = instNames.length-1;
      }
      println(listIndex);
+     
     // cp5.get(Textlabel.class, "instName").setText("Instrument: " + instNames[listIndex]);  //change inst name display
     // cp5.get(Textlabel.class, "instName2").setText("Instrument: " + instNames[listIndex]);  //change inst name display
     // sup.copyEnvPointsTo(insts[lastListIndex]);  //copy the existing envelop from the shaper to the last insturment

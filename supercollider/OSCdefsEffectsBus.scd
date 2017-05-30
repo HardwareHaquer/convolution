@@ -13,6 +13,7 @@ Scale.directory
 s.plotTree;
 s.meter;
 ~scale = Scale.minor;
+~scale.postln;
 ~coreNote = 58;
 ~coreNote = 50;
 440.midinote
@@ -74,7 +75,7 @@ on = OSCdef(\testNoteOn, { |msg|
 	//notes[~noteOn[2]] = Synth(\ay1, [\freqa, frqa, \freqb, frqb, \freqc, frqc,\trig, ~noteOn[3]/128, \out, ~reverbBus], ~srcGroup);
 	//~scale.degreeToFreq(~degree, ~coreNote.midicps, ~root).postln;
 	//~noteOn[2].midicps.postln;
-	notes[~noteOn[2]] = Synth(\Moog,[\freq, frqa],/* [\pitch, ~noteOn[2].midicps, \trig, ~noteOn[3]/128, \out, ~reverbBus],*/ ~srcGroup);
+	notes[~noteOn[2]] = Synth(\am1,[\freq, frqa, \out, ~reverbBus],/* [\pitch, ~noteOn[2].midicps, \trig, ~noteOn[3]/128, \out, ~reverbBus],*/ ~srcGroup);
 	//x.set("pitch", ~noteOn[2].midicps);
 	//x.set("trig", ~noteOn[3]/128);
 
@@ -215,7 +216,7 @@ SynthDef("am1", {arg freq = 200, modfreq = 5, amp = 0.4, att = 0.01, rel = 3, ou
     Out.ar(out, carrier ! 2);
 }).add;
 )
-x = Synth(\ay1,[\out, ~reverbBus], ~srcGroup);
+x = Synth(\am1,[\out, ~reverbBus], ~srcGroup);
 x.free;
 
 (

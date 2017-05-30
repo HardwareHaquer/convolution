@@ -38,6 +38,18 @@ class StepSequencer {
  */
  private int lastXSteps;
  
+  /**
+ *Remembers the current value of stepCount slider for use in stepCount function.
+ */
+ private int currStepCount;
+ 
+  /**
+ *Remembers the last value of stepcount Slider for use in stepCount function.
+ */
+ private int lastStepCount;
+ 
+ private int lastCheck = 0;
+ 
 /**
 *Defines the interval for the Matrix object.
 */
@@ -518,9 +530,27 @@ void randomize(){
   void setSeqSteps(HardwareInput a, int column){
     boolean pushedButton = false;          //Keeps track of whether the cell in question was active when the corresponding button was pushed.
     println("MDHIndex: " +MDHIndex);
-    int encPos = ((int)a.encoders[0] % 5) + 1;
-    stepCount.setValue(encPos);            //Alows the tall rotary encoder to change the value of the stepCount Slider.
-    println("encoder: "+ encPos);
+    lastStepCount = currStepCount;
+   // currStepCount = ((int)a.encoders[0] % 5) + 1;
+   
+    if( a.enc1ChangeFlag && (millis()-lastCheck > 100)){
+      a.enc1ChangeFlag = false;
+      if(millis()-lastCheck < 1000){
+      if( (int)a.rawEnc1[0] > (int)a.rawEnc1[1] ){
+        currStepCount++;
+        if (currStepCount > 5) currStepCount = 1;
+      }else {
+        currStepCount--;
+        if(currStepCount < 1) currStepCount = 5;
+      }
+      }
+      lastCheck = millis();
+    }
+    println("currStepCount: " + currStepCount);
+    
+    //int encPos = ((int)a.encoders[0] % 5) + 1;
+    stepCount.setValue(currStepCount);            //Alows the tall rotary encoder to change the value of the stepCount Slider.
+    println("encoder: "+ currStepCount );
     float[] knobsList = a.getKnobs();
     float volumeKnob = knobsList[0] / 4000; //Allows the smooth knob to changed the value of the volume slider.
     volume.setValue(volumeKnob);            // Used 4000 because that seems to be the max value of the knob.
