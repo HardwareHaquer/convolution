@@ -9,16 +9,27 @@ class Matricks {
   int numSteps;
   String[] instNames;
   Timer time;
+  Timer[] funcDebounce;
   int mHeight;
   int mWidth;
+  float randomProb = 0.31;
  // String[] buttons = {"Mute", "Adjust/Lock", "Clear Insturment", "Clear Matrix", "Save"};
-  ButtonGroup b;
+ // ButtonGroup b;
   
-  
+   String[] encModes = {"Insturment Select", "BPM", "RandomProb", "BPM Steps"};
    String[] toggleNames = {"Adjust_Lock","Mute_All", "Mute_Instrument"};
    String[] buttonNames = {"Randomize", "Clear_Instrument", "Clear_Matrix"};
+   
+   
     Toggle[] toggles = new Toggle[toggleNames.length]; 
     Button[] buttons = new Button[buttonNames.length]; 
+    
+    int totalButtons = toggles.length + buttons.length;
+    
+    String [] allNames = concat(toggleNames, buttonNames);
+    int buttonGap = 10;
+    int buttonWidth = (width-buttonGap*(totalButtons+2))/totalButtons;
+    int buttonHeight = 40;
   
  Matricks(String _matrixName, int _nx, int _ny, int _mWidth, int _mHeight, String[] _instNames, int _interval){
    //make numSteps variable from 16 -128 while only displaying 32 steps
@@ -45,9 +56,10 @@ class Matricks {
        
        //.setValue( 0.1 )
        .setLabel(toggleNames[i])
-       .setPosition(430, 5+i*45)
-       .setSize(150, 30)
-       
+       //.setPosition(430, 5+i*45)
+       .setPosition(buttonGap+(buttonWidth+buttonGap)*i, 210)
+       //.setSize(150, 30)
+       .setSize(buttonWidth, buttonHeight)
        ;
        cp5.getController(toggleNames[i]).getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER).setPaddingX(0); //getValueLabel().alignX(ControlP5.CENTER);
       // cp5.getController(toggles[i]).getValueLabel().alignY(ControlP5.CENTER);
@@ -58,14 +70,35 @@ class Matricks {
        
        //.setValue( 0.1 )
        .setLabel(buttonNames[i])
-       .setPosition(430, (toggleNames.length)*45 + i*45)
-       .setSize(150, 30)
+       .setPosition(buttonGap+(buttonWidth+buttonGap)*(i+toggles.length), 210)
+       .setSize(buttonWidth, buttonHeight)
        
        ;
        cp5.getController(buttonNames[i]).getValueLabel().alignX(ControlP5.CENTER);
   
       }
       
+     cp5.addTextlabel("EncoderMode")
+      .setText("Encoder Mode: " + encModes[arduino.getMode(1)%2])
+      .setPosition(width-300, 180)
+      .setSize(100,5)
+      .setColorValue(0xffff00ff)
+      .setFont(createFont("AvenirNext-DemiBold",20))
+      //.setMultiline(true)
+      .setLineHeight(0)
+      .setVisible(true)
+      ;
+      
+      cp5.addTextlabel("RandomProb")
+      .setText("Randomizer Probability: " + randomProb)
+      .setPosition(width-300, 120)
+      .setSize(100,5)
+      .setColorValue(0xffff00ff)
+      .setFont(createFont("AvenirNext-DemiBold",20))
+      //.setMultiline(true)
+      .setLineHeight(0)
+      
+      ;
      
      instVals = new boolean[numInsts][numSteps];
      for(int i = 0; i < numInsts;  i++){
@@ -76,7 +109,10 @@ class Matricks {
      instNames = _instNames;
      
      time = new Timer(interval*(numSteps+1)-1);
-     
+     funcDebounce = new Timer[8];
+     for( int i = 0; i < funcDebounce.length; i++){
+       funcDebounce[i] = new Timer(500);
+     }
      
      //String _gName, String[] _names, float _gX, float _gY, int _w, int _h
   //   b = new ButtonGroup("Controls", buttons, 5, 5, width/2,10);
@@ -108,17 +144,30 @@ class Matricks {
    }
  }
  
- void randomize(){
+ void randomize(float prob){
    for(int i = 0; i < numInsts;  i++){
       for( int j = 0; j < numSteps; j++){
         float rand = random(0,1);
         boolean state;
-        if(rand <0.31) state = true;
+        if(rand < prob) state = true;
         else state = false;
         
        cp5.get(Matrix.class, matrixName).set(j, i, state);
       }
    }
+ }
+ 
+void setRandomProb(HardwareInput a){
+    if(arduino.encChangeFlag == true){
+      if(arduino.rawEnc2[0] > arduino.rawEnc2[1]) randomProb += 0.1;
+      else randomProb -= 0.1;
+      arduino.encChangeFlag = false;
+    }
+    if( randomProb < 0.1 ) randomProb = 0.1;
+    if( randomProb > 0.9) randomProb = 0.9;
+    cp5.get(Textlabel.class, "RandomProb")
+      .setText("Randomizer Probability: " + randomProb);
+   
  }
   void update(){
     
@@ -183,7 +232,25 @@ class Matricks {
   //  }
   // // println();
   //} 
-  
+  void setButtonStates(HardwareInput a){
+    for(int i=0; i < allNames.length; i++){
+      if(a.funcPads[i] == true && funcDebounce[i].isFinished()){
+        boolean state;
+     if(i < toggleNames.length){
+       state =  cp5.get(Toggle.class, allNames[i]).getState();
+       state = !state;
+       cp5.get(Toggle.class, allNames[i]).setState(state);
+     }else{
+       //button code here fuck
+       cp5.get(Button.class, allNames[i]).setValue(1);
+       println("we tried");
+     }
+     a.funcPads[0] = false;
+    
+    }
+   // if((i >= toggleNames.length) && cp5.get(Button.class, allNames[i]).isOn() && funcDebounce[i].isFinished()) cp5.get(Button.class, allNames[i]).setOff();
+    }
+  }
   void setInstSteps(HardwareInput a, int index){
     int encPos = (int)a.encoders[0];
     int start  = encPos*12;
@@ -204,4 +271,38 @@ class Matricks {
     }
     //println();
   } 
+  
+  void setEncMode(){
+    int currMode = arduino.getMode(1)%encModes.length;
+  if(arduino.enc2ModeFlg == true){
+   cp5.get(Textlabel.class,"EncoderMode").setText("Encoder Mode: " + encModes[currMode]);
+   arduino.enc2ModeFlg = false;
+  }
+   switch(currMode){
+     case 0:
+     cp5.get(Textlabel.class, "RandomProb").hide();
+     updateInsturment();
+     break;
+     
+     case 1:
+     cp5.get(Textlabel.class, "RandomProb").hide();
+     updateBPM();
+     break;
+     
+     case 2:
+     cp5.get(Textlabel.class, "RandomProb").show();
+     setRandomProb(arduino);
+     break;
+     
+     case 3:
+     cp5.get(Textlabel.class, "RandomProb").hide();
+     updateBPMSteps();
+     break;
+     
+     default:
+     break;
+   }
+}
+
+
 }

@@ -30,7 +30,7 @@ class EffectsGroup{
                  
   Group g1 = cp5.addGroup(groupName)
                  .setPosition(gX,gY)
-                 .setBarHeight(40)
+                 .setBarHeight(20)
                  .setBackgroundHeight(200)
                  .setSize(w,h)
                  .setBackgroundColor(0xffff11ff)

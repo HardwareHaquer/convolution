@@ -17,6 +17,9 @@ class HardwareInput{
   float[][] smoothing;
   float[] smoothKnobs;
   boolean[] quadPad;
+  boolean[] funcPads;
+  boolean[] lastFuncPads;
+  boolean[] funcStates;
   int smoothSteps;
   boolean encChangeFlag =false;
   boolean enc1ChangeFlag = false;
@@ -26,6 +29,9 @@ class HardwareInput{
  HardwareInput(int numKnobs, int numNotes, int numEncoders, float initMode){
    smoothSteps = 10;
    quadPad = new boolean[4];
+   funcPads = new boolean[8];
+   lastFuncPads = new boolean[funcPads.length];
+   funcStates = new boolean[8];
    pads = new boolean[16];
    lastPads = new boolean[16];
    knobs = new float[numKnobs];
@@ -144,7 +150,8 @@ class HardwareInput{
     int lastEnc1 = enc1Mode;
     int lastEnc2 = enc2Mode;
    if(int(trim(v[1])) == 0){
-     enc1Mode = int(trim(v[2])); 
+     enc1Mode = int(trim(v[2])) % tModes; 
+     
      if(lastEnc1 != enc1Mode) enc1ModeFlg = true;
    }
    if(int(trim(v[1])) == 1){
@@ -187,6 +194,7 @@ class HardwareInput{
   }else if(v[0].equals("/rawEnc")){
     rawEnc1[1] = rawEnc1[0];
     rawEnc1[0] = int(trim(v[1]));
+    
     if (rawEnc1[0] != rawEnc1[1]) enc1ChangeFlag = true;
     
     rawEnc2[1] = rawEnc2[0];
@@ -197,13 +205,32 @@ class HardwareInput{
   }else if(v[0].equals("/buttons")){
    // print(v[0] + " : ");
     for(int z = 1; z < v.length; z++){
-      
-      if(int(trim(v[z])) ==1) quadPad[z-1] = true;
+      int padVal = int(trim(v[z]));
+      if(padVal ==1) quadPad[z-1] = true;
       else{ 
         quadPad[z-1] = false;
-        debounce[z-1].finish();
+       debounce[z-1].finish();
       }
      // print(quadPad[z-1] + " | " );
+    }
+    lastFuncPads = funcPads;
+    for(int z = 1; z < v.length; z++){
+      lastFuncPads[z-1] = funcPads[z-1];
+      int padVal = int(trim(v[z]));
+      
+      if(padVal ==1) funcPads[z-1] = true;
+      else{ 
+        funcPads[z-1] = false;
+        debounce[z-1].finish();
+      }
+     // println("funcPads: " + funcPads[z-1] + " lastFuncPads: " + lastFuncPads[z-1]);
+     if(funcPads[z-1] == true && lastFuncPads[z-1] == false){
+       funcStates[z-1] = true;
+       println("hloy fucking shit man shit be workin!!!!!!!!");
+     }else {
+       funcStates[z-1] = false;
+     }
+     // print(funcStates[z-1] + " | " );
     }
    // println();
   }

@@ -57,6 +57,8 @@ void dmMode(){
 
   fill(255, 100);
   seq.setInstSteps(arduino, listIndex);
+  seq.setButtonStates(arduino);
+  seq.setEncMode();
    seq.update();
    //seq.sendMatrixOsc();
    sup.updateEnvPoints();

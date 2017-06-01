@@ -67,8 +67,8 @@ String[] sliderNames = {"attack",
                         "decay",
                         "sustain",
                         "release",
-                        "effect1",
-                        "effect2"
+                        "amp",
+                        "rate"
                         };
 String[] globalSliders = {"Global FX1",
                         "Global FX2",
@@ -92,7 +92,7 @@ int lastListIndex = 4;
 //Input mode defaults and total for control via keyboard input.  
 int theMode = 0;
 int lastMode = 0;
-int tModes = 3;
+int tModes = 3;  //total number of modes
 int seqRowIndex;
 PApplet appletRef;
 //
@@ -141,7 +141,7 @@ void setup() {
   osc = new OscP5(this, 12001);
   address = new NetAddress(HOST, PORT);
  // port = new Serial(this, Serial.list()[SERIAL_PORT], BAUD);
-  port = new Serial(this, Serial.list()[Serial.list().length -2], BAUD);
+  port = new Serial(this, Serial.list()[Serial.list().length -1], BAUD);
   port.bufferUntil('\n');
   //==============================================
   
@@ -283,7 +283,7 @@ void setup() {
 
 
 void draw() {
-  updateInputMode();
+  //updateInputMode();
   shiftRoot();
   if(arduino.encoders[0] != arduino.lastEncode[0]){
     updateRootText();
@@ -328,7 +328,7 @@ void Adjust_Lock(boolean state){
   insts[listIndex].lock = state;
 }
 void Randomize(){
-  seq.randomize();
+  seq.randomize(seq.randomProb);
 }
 void Mute_All(boolean state){
   seq.mute = state;
@@ -428,7 +428,39 @@ void setBPM(){
   }
 }
 
-
+void updateBPM(){
+  OscMessage bpmMsg = new OscMessage( "/bpm" );
+  //change BPM
+  if(arduino.encChangeFlag == true){
+    if(arduino.rawEnc2[0] > arduino.rawEnc2[1]) bpm++;
+    else bpm--;
+    arduino.encChangeFlag = false;
+  }
+    if( bpm < 0 ) bpm = 0;
+    bpmMsg.add(bpm);
+     osc.send(bpmMsg, address);
+    cp5.get(Textlabel.class,"bpm").setText("BPM: " + bpm);
+} 
+       
+void updateBPMSteps(){
+  OscMessage bpmMsg = new OscMessage( "/bpm" );
+  //change BPM
+  if (bpm < 30) bpm = 30;
+  else if (bpm > 30 && bpm < 60) bpm = 60;
+  else if (bpm > 60 && bpm < 90) bpm = 90;
+  else if (bpm > 90 && bpm < 120) bpm = 120;
+  else if (bpm > 120 && bpm < 150) bpm = 150;
+  else if (bpm > 150) bpm = 180;
+  if(arduino.encChangeFlag == true){
+    if(arduino.rawEnc2[0] > arduino.rawEnc2[1]) bpm+=30;
+    else bpm-=30;
+    arduino.encChangeFlag = false;
+  }
+    if( bpm < 30 ) bpm = 30;
+    bpmMsg.add(bpm);
+     osc.send(bpmMsg, address);
+    cp5.get(Textlabel.class,"bpm").setText("BPM: " + bpm);
+} 
 
 void updateInsturment(){
   if(arduino.encChangeFlag == true){
@@ -474,26 +506,40 @@ void unPlugSliders(int last){
 }
 
 void setupInstSliders(){
+  float[][] sliderRanges  = {{0.001, 5.0}, {0.01, 5.0},{0.01, 5.0},{0.01, 5.0}, {0.0, 1.0},{0.1, 10.0}};              
+  int slideWidth = 60;
+  int slideHeight = 160;
+  int slideGap = 10;
+  int gWidth = slideGap + sliderNames.length*(slideWidth+slideGap);
   Group g2 = cp5.addGroup("Global Controls")
-                 .setPosition(10,40)
-                 .setBarHeight(40)
-                 .setBackgroundHeight(200)
-                 .setSize(400,220)
+                 .setPosition(10,0)
+                 .setBarHeight(20)
+                 .setBackgroundHeight(180)
+                 .setSize(400,210)
                  .setBackgroundColor(#585858)
                  //.close()
                  ;
                  
   Group g1 = cp5.addGroup("Effects Controls")
-                 .setPosition(10,40)
-                 .setBarHeight(40)
+                 .setPosition(0,0)
+                 .setBarHeight(10)
                  .setBackgroundHeight(200)
-                 .setSize(400,220)
+                 .setSize(gWidth,slideHeight+30)
                  .setBackgroundColor(#585858)
                  ;
-                 
-  
-   
-   cp5.addSlider( "attack" )
+ 
+   for( int i =0; i < sliderNames.length; i++){
+     cp5.addSlider( sliderNames[i] )
+       .setRange( sliderRanges[i][0], sliderRanges[i][1] )
+       //.plugTo( this, "setAtk" )
+       .setValue( 0.1 )
+       .setLabel(sliderNames[i])
+       .setPosition(slideGap+(i*(slideWidth+slideGap)),10)
+       .setSize(slideWidth, slideHeight)
+       .setGroup(g1)
+       ;
+   }
+/*   cp5.addSlider( "attack" )
        .setRange( 0.0, 5.0 )
        //.plugTo( this, "setAtk" )
        .setValue( 0.1 )
@@ -552,10 +598,10 @@ void setupInstSliders(){
        .setSize(50, 180)
        .setGroup(g1)
        ;
-       
-  cp5.addTextlabel("instName")
+*/
+cp5.addTextlabel("instName")
        .setText("Instrument: " + instNames[listIndex])
-       .setPosition(10,210)
+       .setPosition(10,250)
        .setSize(50, 300)
        .setColorValue(0xffffff00)
        .setFont(createFont("AvenirNext-DemiBold",24))
@@ -569,8 +615,8 @@ void setupInstSliders(){
   cp5.getController("decay").getValueLabel().alignX(ControlP5.CENTER);
   cp5.getController("sustain").getValueLabel().alignX(ControlP5.CENTER);
   cp5.getController("release").getValueLabel().alignX(ControlP5.CENTER);
-  cp5.getController("effect1").getValueLabel().alignX(ControlP5.CENTER);
-  cp5.getController("effect2").getValueLabel().alignX(ControlP5.CENTER);
+  cp5.getController("amp").getValueLabel().alignX(ControlP5.CENTER);
+  cp5.getController("rate").getValueLabel().alignX(ControlP5.CENTER);
        
        //End g1 === ========
        

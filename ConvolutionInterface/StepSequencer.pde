@@ -529,13 +529,13 @@ void randomize(){
 
   void setSeqSteps(HardwareInput a, int column){
     boolean pushedButton = false;          //Keeps track of whether the cell in question was active when the corresponding button was pushed.
-    println("MDHIndex: " +MDHIndex);
+   
     lastStepCount = currStepCount;
    // currStepCount = ((int)a.encoders[0] % 5) + 1;
    
     if( a.enc1ChangeFlag && (millis()-lastCheck > 100)){
       a.enc1ChangeFlag = false;
-      if(millis()-lastCheck < 1000){
+      if(millis()-lastCheck < 300){
       if( (int)a.rawEnc1[0] > (int)a.rawEnc1[1] ){
         currStepCount++;
         if (currStepCount > 5) currStepCount = 1;
@@ -546,11 +546,11 @@ void randomize(){
       }
       lastCheck = millis();
     }
-    println("currStepCount: " + currStepCount);
+  
     
     //int encPos = ((int)a.encoders[0] % 5) + 1;
     stepCount.setValue(currStepCount);            //Alows the tall rotary encoder to change the value of the stepCount Slider.
-    println("encoder: "+ currStepCount );
+   
     float[] knobsList = a.getKnobs();
     float volumeKnob = knobsList[0] / 4000; //Allows the smooth knob to changed the value of the volume slider.
     volume.setValue(volumeKnob);            // Used 4000 because that seems to be the max value of the knob.
