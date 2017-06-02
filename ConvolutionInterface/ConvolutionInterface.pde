@@ -93,6 +93,7 @@ int lastListIndex = 4;
 int theMode = 0;
 int lastMode = 0;
 int tModes = 3;  //total number of modes
+boolean modeChgFlag = false;
 int seqRowIndex;
 PApplet appletRef;
 //
@@ -284,21 +285,21 @@ void setup() {
 
 void draw() {
   //updateInputMode();
-  shiftRoot();
-  if(arduino.encoders[0] != arduino.lastEncode[0]){
-    updateRootText();
-    sendRoot();
-  }
-  if(arduino.enc1Mode == SEQUENCER){// || theMode == SEQUENCER){
+  lastMode = theMode;
+  theMode = arduino.enc1Mode;
+  if(lastMode != theMode) modeChgFlag = true;
+  //println(modeChgFlag);
+  
+  if(theMode == SEQUENCER){// || theMode == SEQUENCER){
     
     dmMode();
     
   }
-  else if(arduino.enc1Mode == LEAD){ // || theMode == LEAD){
+  else if(theMode == LEAD){ // || theMode == LEAD){
     leadMode();
      
   }
-  else if(arduino.enc1Mode == DRUM_MACHINE){ // || theMode == DRUM_MACHINE){
+  else if(theMode == DRUM_MACHINE){ // || theMode == DRUM_MACHINE){
     seqMode();
     
   
@@ -481,7 +482,8 @@ void updateInsturment(){
   
      sup.copyEnvPointsFrom(insts[listIndex]);  //copy the envelop from current instrument to shaper
      sup.updateVertices();  //update vertices on envelop display
-    
+     insts[lastListIndex].lock = true;
+     cp5.get(Toggle.class, "Adjust_Lock").setState(insts[lastListIndex].lock);
      unPlugSliders(lastListIndex);  //unplug the effects sliders from the previos instrument
      plugSliders(listIndex, lastListIndex);  //plug the sliders to the current instrument
      //println(listIndex + " | " + lastListIndex);
@@ -700,13 +702,15 @@ cp5.addTextlabel("instName")
   plugSliders(listIndex, 0);
 }
 
-void setGlobalEffects(float[] input){ //add flag for lock
+void setGlobalEffects(float[] input, String[] sliders ){ //add flag for lock
+if(!insts[listIndex].lock){
   for(int i = 0; i < input.length; i++){
-    float min = cp5.getController(globalSliders[i]).getMin();
-    float max = cp5.getController(globalSliders[i]).getMax();
+    float min = cp5.getController(sliders[i]).getMin();
+    float max = cp5.getController(sliders[i]).getMax();
     float temp = map(input[i], 0, 4096, min, max);
-    cp5.getController(globalSliders[i]).setValue(temp);
+    cp5.getController(sliders[i]).setValue(temp);
   }
+}
   }
   
 

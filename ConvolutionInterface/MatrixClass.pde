@@ -16,7 +16,7 @@ class Matricks {
  // String[] buttons = {"Mute", "Adjust/Lock", "Clear Insturment", "Clear Matrix", "Save"};
  // ButtonGroup b;
   
-   String[] encModes = {"Insturment Select", "BPM", "RandomProb", "BPM Steps"};
+   String[] encModes = {"Insturment Select", "BPM", "Random Probability", "BPM Steps"};
    String[] toggleNames = {"Adjust_Lock","Mute_All", "Mute_Instrument"};
    String[] buttonNames = {"Randomize", "Clear_Instrument", "Clear_Matrix"};
    
@@ -80,7 +80,7 @@ class Matricks {
       
      cp5.addTextlabel("EncoderMode")
       .setText("Encoder Mode: " + encModes[arduino.getMode(1)%2])
-      .setPosition(width-300, 180)
+      .setPosition(width-360, 40)
       .setSize(100,5)
       .setColorValue(0xffff00ff)
       .setFont(createFont("AvenirNext-DemiBold",20))
@@ -91,7 +91,7 @@ class Matricks {
       
       cp5.addTextlabel("RandomProb")
       .setText("Randomizer Probability: " + randomProb)
-      .setPosition(width-300, 120)
+      .setPosition(width-360, 80)
       .setSize(100,5)
       .setColorValue(0xffff00ff)
       .setFont(createFont("AvenirNext-DemiBold",20))
@@ -125,12 +125,17 @@ class Matricks {
    cp5.get(Textlabel.class, "bpm").show();
   cp5.get(Textlabel.class, "current").show();
   cp5.get(Group.class, "Effects Controls").show();
+  cp5.get(Textlabel.class, "EncoderMode").show();
+  
    }else{
      for (int i = 0; i < toggles.length; i++) toggles[i].hide();
    for (int i = 0; i < buttons.length; i++) buttons[i].hide();
    cp5.get(Textlabel.class, "bpm").hide();
   cp5.get(Textlabel.class, "current").hide();
   cp5.get(Group.class, "Effects Controls").hide();
+  cp5.get(Textlabel.class, "EncoderMode").hide();
+    cp5.get(Textlabel.class, "RandomProb").hide();
+
    }
  }
  

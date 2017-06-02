@@ -159,6 +159,15 @@ class StepSequencer {
  */
  private IntList lastSelectedRootNotes = new IntList();
  
+ 
+ 
+ private String[] toggles = {"root_notes", "slide_Mode", "loop", "mute"};
+ 
+ private String[] buttons = {"random", "send"};
+ 
+ String [] buttonNames = concat(toggles, buttons);
+ 
+ private int bWidth;
  /**
  *A Toggle button used to switch between the music sequencer mode and the root note mode.
  */
@@ -211,6 +220,8 @@ class StepSequencer {
  private Slider volume;
  
  private CallbackListener cb;  
+ 
+ Timer[] funcDebounce;
   
 /**
 *Constructs a new StepSequencer with given Name and other default values.
@@ -228,17 +239,22 @@ public StepSequencer(String _matrixName){
   sizeMatrix_Y = 351; //safe Value: 342, 351, 360 (add 9)
 
   posKeySelector_X = 10;
-  posKeySelector_Y = 20;
+  posKeySelector_Y = 10;
 
   posStepSlider_X = 730;
   posStepSlider_Y = 40;
     
   posButton_X = 600;
-  posButton_Y = 395;
+  posButton_Y = 400;
     
   xRootNotes = 4;
   
   highlightedRow = 0;
+  
+  funcDebounce = new Timer[8];
+     for( int i = 0; i < funcDebounce.length; i++){
+       funcDebounce[i] = new Timer(500);
+     }
   
   sequencerButtons = cp5.addMatrix(matrixName)
     .setPosition(posMatrix_X,posMatrix_Y)
@@ -285,8 +301,8 @@ public StepSequencer(String _matrixName){
     ; 
     
   volume = cp5.addSlider("volume")
-    .setPosition(posButton_X - 500, posButton_Y + 40)
-    .setSize(200, 20)
+    .setPosition(posKeySelector_X, posKeySelector_Y + 260)
+    .setSize(40, 180)
     .setRange(0, 1)
     .setValueSelf(1.00)
     .setNumberOfTickMarks(11)
@@ -294,37 +310,57 @@ public StepSequencer(String _matrixName){
     .setDecimalPrecision(2)
     .snapToTickMarks(false);
   ;
-    
-  random = cp5.addButton("random")
-    .setPosition(posButton_X,posButton_Y)
-    ;
-   
-  mute = cp5.addToggle("mute")
-    .setPosition(posButton_X - 80, posButton_Y)
-    ;
-    
-  slide_mode = cp5.addToggle("slide_Mode")
-    .setPosition(posButton_X - 170, posButton_Y)
-    ;
-   
-  loop = cp5.addToggle("loop")
-    .setPosition(posButton_X - 520, posButton_Y)
-    ;
+    int bGap = 10;
+    bWidth = ((width-90)-bGap*(buttonNames.length+1))/buttonNames.length;
+   // (width-buttonGap*(totalButtons+2))/totalButtons;
     
   root_notes = cp5.addToggle("root_notes")
-    .setPosition(posButton_X - 430, posButton_Y)
+    .setPosition(((bWidth+bGap)*0)+90, posButton_Y)
+    .setSize(bWidth,30)
+    .setId(101)
     ;
+    root_notes.getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER).setPaddingX(0); 
     
+  slide_mode = cp5.addToggle("slide_Mode")
+    .setPosition(((bWidth+bGap)*1)+90, posButton_Y)
+    .setSize(bWidth,30)
+    .setId(102)
+    ;
+    slide_mode.getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER).setPaddingX(0);
+   
+  loop = cp5.addToggle("loop")
+    .setPosition(((bWidth+bGap)*2)+90, posButton_Y)
+    .setSize(bWidth,30)
+    .setId(103)
+    ;
+    loop.getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER).setPaddingX(0);
+    
+  random = cp5.addButton("random")
+    .setPosition(((bWidth+bGap)*3)+90,posButton_Y)
+    .setSize(bWidth,30)
+    .setId(105)
+    ;
+    random.getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER).setPaddingX(0);
+   
+  mute = cp5.addToggle("mute")
+    .setPosition(((bWidth+bGap)*4)+90, posButton_Y)
+    .setSize(bWidth,30)
+    .setId(104)
+    ;
+    mute.getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER).setPaddingX(0);
+ 
   Send = cp5.addButton("send")
-    .setPosition(posButton_X + 80, posButton_Y)
-    .setHeight(60);
+    .setPosition(((bWidth+bGap)*5)+90, posButton_Y)
+    .setSize(bWidth,30)
+    //.setHeight(60)
+    .setId(106)
     ;
     
         //When this button (the send button) is pressed, the program calls the sendMatrixOsc function,
         //vwhich sends an osc message of the currently selected cells to the synthesizer.
   Send.addCallback(new CallbackListener() {
     public void controlEvent(CallbackEvent tempEvent){
-      if (tempEvent.getAction() == ControlP5.ACTION_PRESS){
+      if (tempEvent.getAction() != ControlP5.ACTION_RELEASE){
       sendMatrixOsc();
       }
     }
@@ -337,14 +373,14 @@ public StepSequencer(String _matrixName){
   slide_mode.addCallback(new CallbackListener(){
     public void controlEvent(CallbackEvent bEvent){
       float value;
-      if (bEvent.getAction() == ControlP5.ACTION_PRESS){
+      if (bEvent.getAction() != ControlP5.ACTION_RELEASE){
         if (slide_mode.getBooleanValue()) value = 1;  //After the button is pressed, the boolean value immediately changes, so when checking the boolean 
         else value = 0.5;                               // after the button is switched from off to on, the boolean retruns true.
         OscMessage slideMessage = new OscMessage("/Slide");
         slideMessage.add(value);
         
         osc.send(slideMessage, address);
-        println("I sent a slide message " + value);
+       // println("I sent a slide message " + value);
       }
     }
   }
@@ -395,7 +431,7 @@ public StepSequencer(String _matrixName){
   // which uses a random number generator to randomly activate cells in the matrix.
   random.addCallback(new CallbackListener() {
     public void controlEvent(CallbackEvent anEvent){
-      if (anEvent.getAction() == ControlP5.ACTION_PRESS){
+      if (anEvent.getAction() != ControlP5.ACTION_RELEASE){
         randomize();
       }
     }
@@ -405,7 +441,7 @@ public StepSequencer(String _matrixName){
 //This button (the root_notes button) allows the user to switch between sequencer mode and root notes mode.
   root_notes.addCallback(new CallbackListener() {
     public void controlEvent(CallbackEvent theEvent) {
-      if (theEvent.getAction()==ControlP5.ACTION_PRESS) {
+      if (theEvent.getAction()!=ControlP5.ACTION_RELEASE) {
         saveRecentCells();      //When the button is pressed, save a list of the cells that were active for future reference when the user returns.
         
         if(root_notes.getBooleanValue()){    //Split here because the values are different for entering root notes mode and entering sequencer mode.
@@ -452,10 +488,11 @@ private void selectKeys(int button){
 /**
 *Changes the number of buttons in a (horizontal) row available in the matrix. Uses the slider to decide the value.
 */
-void stepCount(float count){
+void stepCount(float countSeq){
+  //if (modeChgFlag == true)
   if(!root_notes.getBooleanValue()){  //Checks to see if the matrix is in root note mode or sequencer mode.
     lastXSteps = xSteps;//In this case, the matrix is in sequencer mode.
-    switch(str(int(count))){
+    switch(str(int(countSeq))){
       case("1"):xSteps = 2; break;  //Uses pre-determined values for the number of buttons. 
       case("2"):xSteps = 3; break;  // These numbers are based on common time signitures.
       case("3"):xSteps = 4; break;
@@ -472,7 +509,7 @@ void stepCount(float count){
   }
   else{
     lastXRootNotes = xRootNotes;  //In this case, the matrix is in root note mode.
-    switch(str(int(count))){
+    switch(str(int(countSeq))){
       case("1"):xRootNotes = 2; break;
       case("2"):xRootNotes = 3; break;
       case("3"):xRootNotes = 4; break;
@@ -530,29 +567,34 @@ void randomize(){
   void setSeqSteps(HardwareInput a, int column){
     boolean pushedButton = false;          //Keeps track of whether the cell in question was active when the corresponding button was pushed.
    
-    lastStepCount = currStepCount;
-   // currStepCount = ((int)a.encoders[0] % 5) + 1;
-   
-    if( a.enc1ChangeFlag && (millis()-lastCheck > 100)){
+  
+    if( a.enc1ChangeFlag && modeChgFlag == false){// && (millis()-lastCheck > 100)){
       a.enc1ChangeFlag = false;
-      if(millis()-lastCheck < 300){
+     
       if( (int)a.rawEnc1[0] > (int)a.rawEnc1[1] ){
         currStepCount++;
         if (currStepCount > 5) currStepCount = 1;
-      }else {
+      }else if ((int)a.rawEnc1[0] < (int)a.rawEnc1[1]){
         currStepCount--;
         if(currStepCount < 1) currStepCount = 5;
       }
-      }
+     
       lastCheck = millis();
+     
+        stepCount.setValue(currStepCount); //Checks to see if the matrix is in root note mode or sequencer mode.
+     
+      println(currStepCount + " :currStep " + (int)a.rawEnc1[0] + " :[0]" +  (int)a.rawEnc1[1] + " :[1]");
     }
-  
+    else {
+      modeChgFlag = false;
+      a.rawEnc1[1] = a.rawEnc1[0];
+    }
     
     //int encPos = ((int)a.encoders[0] % 5) + 1;
-    stepCount.setValue(currStepCount);            //Alows the tall rotary encoder to change the value of the stepCount Slider.
+               //Alows the tall rotary encoder to change the value of the stepCount Slider.
    
     float[] knobsList = a.getKnobs();
-    float volumeKnob = knobsList[0] / 4000; //Allows the smooth knob to changed the value of the volume slider.
+    float volumeKnob = knobsList[0] / 4096; //Allows the smooth knob to changed the value of the volume slider.
     volume.setValue(volumeKnob);            // Used 4000 because that seems to be the max value of the knob.
     
     for(int i = 0; i < a.pads.length; i++){//Checks each pad to see if one was pushed.
@@ -806,10 +848,15 @@ void drawExtras(){
   else counts = (cnt / xSteps) % (xRootNotes - 1);         // accounting for the differences between rootNote mode and sequencer mode.
   
   int stepper;                                          //Stepper is another intermediary variable, just like counts.
-  if(!root_notes.getBooleanValue()) stepper = xSteps;   // It doesn't really serve a purpose other than avoiding writing an entire function inside an if statement.
-  else stepper = xRootNotes;
+  if(!root_notes.getBooleanValue()){
+    stepper = xSteps;   // It doesn't really serve a purpose other than avoiding writing an entire function inside an if statement.
+    if (seqRowIndex > xSteps) seqRowIndex = 0;
+  }
+  else{ stepper = xRootNotes;
+  if (seqRowIndex > xRootNotes) seqRowIndex = 0;
+  }
   //updateSeqRowIndex();
-  if (seqRowIndex > xSteps) seqRowIndex = 0;
+  
   
   float matrixWidth = sequencerButtons.getWidth();
   rectMode(CORNER);
@@ -822,10 +869,12 @@ void drawExtras(){
   rectMode(CORNER);                                                     //This is the same as the above rectangle, just at the bottom, instead of the top.
   fill(100, 215, 40);
   rect(posMatrix_X + buttonSpacing, posMatrix_Y + sizeMatrix_Y, matrixWidth/(stepper), 20);
-  println("seqRowIndex: " + seqRowIndex + "matrix width: " + matrixWidth + " stepper: " + stepper);
+  //println("seqRowIndex: " + seqRowIndex + "matrix width: " + matrixWidth + " stepper: " + stepper);
 }
 
 void updateSeqRowIndex(){
+  if(arduino.encChangeFlag == true){
+    arduino.encChangeFlag = false;
   if( arduino.rawEnc2[0] > arduino.rawEnc2[1]){
        
        seqRowIndex = (seqRowIndex+1)%(musicMaker.MDHIndex - 1);
@@ -835,6 +884,27 @@ void updateSeqRowIndex(){
        
        if (seqRowIndex < 0) seqRowIndex = musicMaker.MDHIndex - 2;
      }
+  }
 }
+
+  void setButtonStates(HardwareInput a){
+    for(int i=0; i < buttonNames.length; i++){
+      if(a.funcPads[i] == true && funcDebounce[i].isFinished()){
+        boolean state;
+     if(i < toggles.length){
+       state =  cp5.get(Toggle.class, toggles[i]).getState();
+       state = !state;
+       cp5.get(Toggle.class, toggles[i]).setState(state);
+     }else{
+       //button code here fuck
+       cp5.get(Button.class, buttons[i-toggles.length]).setValue(1);
+       println("we tried");
+     }
+     a.funcPads[0] = false;
+    
+    }
+   // if((i >= toggleNames.length) && cp5.get(Button.class, allNames[i]).isOn() && funcDebounce[i].isFinished()) cp5.get(Button.class, allNames[i]).setOff();
+    }
+  }
 
 }

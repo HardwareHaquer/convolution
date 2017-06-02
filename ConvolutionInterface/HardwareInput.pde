@@ -159,7 +159,23 @@ class HardwareInput{
      if(lastEnc2 != enc2Mode) enc2ModeFlg = true;
    }
    //println(v[0] + v[1] + v[2]);
-   
+   }else if(v[0].equals("/keyNumOn")){
+    int note = int(trim(v[1]));
+    if (enc1Mode == SEQUENCER || enc1Mode == DRUM_MACHINE){
+     // println("note on: " + note + " | oct: " + encPos + " | note%enc: " + ((note-encPos*12)+(16*(encPos%2))));
+      
+      lastPads[note] = pads[note];
+      pads[note] = true;
+    }
+     }else if(v[0].equals("/keyNumOff")){
+    int note = int(trim(v[1]));
+    if (enc1Mode == SEQUENCER || enc1Mode == DRUM_MACHINE){
+     // println("note on: " + note + " | oct: " + encPos + " | note%enc: " + ((note-encPos*12)+(16*(encPos%2))));
+      
+      lastPads[note] = pads[note];
+      pads[note] = false;
+    }
+    
   }else if(v[0].equals("/noteOn")){
     int note = int(trim(v[2]));
     int encPos = (int)encoders[0];

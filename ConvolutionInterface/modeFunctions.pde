@@ -1,7 +1,10 @@
 void seqMode(){
   background(0);
   fill(255,0,255);
+  cp5.getController("label").setVisible(false);
   musicMaker.setVisibility(true);
+  musicMaker.updateSeqRowIndex();
+  musicMaker.setButtonStates(arduino);
   musicMaker.stepCount(cp5.get(Slider.class, "stepCount").getValue());
   
   musicMaker.setSeqSteps(arduino, seqRowIndex);
@@ -13,11 +16,20 @@ void seqMode(){
     cp5.get(Textlabel.class, "current").hide();
     cp5.get(Group.class, "Effects Controls").hide();
     cp5.get(Group.class, "Global Controls").hide();
+    cp5.get(Textlabel.class, "root").hide();
+    
 }
 
 void leadMode(){
  background(0);
     fill(255,0,255);
+    shiftRoot();
+    if(arduino.encoders[0] != arduino.lastEncode[0]){
+      updateRootText();
+      sendRoot();
+      cp5.get(Textlabel.class, "root").show();
+    }
+    cp5.getController("label").setVisible(false);
     musicMaker.setVisibility(false);
     seq.setVisibility(false);
     cp5.getController("seq").hide();
@@ -28,7 +40,7 @@ void leadMode(){
      sup.updateEnvPoints();
      sup.disp();
     if(arduino.knobFlag){
-      setGlobalEffects(arduino.smoothKnobs());
+      setGlobalEffects(arduino.smoothKnobs(), globalSliders);
       arduino.knobFlag  = false;
      }
   
@@ -45,6 +57,7 @@ void dmMode(){
   // cp5.getController(musicMaker.matrixName).bringToFront();
   
     cp5.get(Group.class, "Global Controls").hide();
+    cp5.get(Textlabel.class, "root").hide();
 
   if(instDisplay){
     if(instDsplyTime.isFinished()){
@@ -64,7 +77,7 @@ void dmMode(){
    sup.updateEnvPoints();
  // sup.disp();
   if(arduino.knobFlag){
-    setGlobalEffects(arduino.smoothKnobs());
+    setGlobalEffects(arduino.smoothKnobs(), sliderNames);
     
     arduino.knobFlag  = false;
   }
