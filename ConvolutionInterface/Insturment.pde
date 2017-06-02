@@ -36,37 +36,37 @@ class Instrument{
   void setAtk(float v){
    //atk = v;
    if(lock != true)sliderValues[0] = v;
-   println(theName + ": attack: " + sliderValues[0]);
+  // println(theName + ": attack: " + sliderValues[0]);
   }
   
   void setDcy(float v){
    decay = log(v)*10;
    if(lock != true) sliderValues[1] = v; //log(v)*10;
-   println(theName + ": decay: " + sliderValues[1]);
+  // println(theName + ": decay: " + sliderValues[1]);
   }
   
   void setSus(float v){
     sustain = v;
     if(lock != true) sliderValues[2] = v;
-    println(theName + ": sustain: " + sliderValues[2]);  
+   // println(theName + ": sustain: " + sliderValues[2]);  
   }
   
    void setRel(float v){
     release = v;
     if(lock != true) sliderValues[3] = v;
-    println(theName + ": release: " + sliderValues[3]);  
+   // println(theName + ": release: " + sliderValues[3]);  
   }
   
   void setEffect1(float v){
     effect1 = v;
     if(lock != true) sliderValues[4] = v;
-    println(theName + ": effect1: " + sliderValues[4]);  
+  //  println(theName + ": effect1: " + sliderValues[4]);  
   }
   
   void setEffect2(float v){
     effect2 = v;
     if(lock != true) sliderValues[5] = v;
-    println(theName + ": effect2: " + sliderValues[5]);  
+   // println(theName + ": effect2: " + sliderValues[5]);  
   }
 //initialize default envelop settings 
   void initEnvPoints(){

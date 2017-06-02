@@ -17,16 +17,18 @@ void oscEvent(OscMessage msg)
 //version that forwards info directly from serial to osc
 void serialEvent(Serial port)
 {
+  try{
   String line = port.readStringUntil('\n');
   if (line == null) return;
   String[] vals = splitTokens(line);
   OscMessage msg = new OscMessage(trim(vals[0]));
+  //println(vals.length);
   for (int i = 1; i < vals.length; i++) {
     float val = float(trim(vals[i]));
   //  print("\t" + val);
     msg.add(val);
   }
- // if(vals[0].equals("/noteOn") ) println(vals[0] + " : " + vals[2]);
+  //if(vals[0].equals("/keyOn") ) println(vals[0] + " : " + vals[1]);
   //println();
   if(arduino.enc1Mode == SEQUENCER && (vals[0].equals("/noteOff") || vals[0].equals("/noteOn"))){
    // println(" no send");
@@ -34,5 +36,8 @@ void serialEvent(Serial port)
     osc.send(msg, address);
   }
   arduino.recordValues(vals);
-  
+  }
+  catch(RuntimeException e){
+    e.printStackTrace();
+  }
 }

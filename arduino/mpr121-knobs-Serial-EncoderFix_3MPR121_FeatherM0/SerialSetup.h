@@ -75,13 +75,13 @@ void readKnobs(int k[], int theSize){
 void keyNumOn(int k){
   String keyOnData = "/keyOn ";
   keyOnData += String(k) + "\n";
-  Serial.println(keyOnData);
+  Serial.print(keyOnData);
 }
 
 void keyNumOff(int k){
   String keyOffData = "/keyOn ";
   keyOffData += String(k) + "\n";
-  Serial.println(keyOffData);
+  Serial.print(keyOffData);
 }
 void noteOn( byte c, byte n, int v){
   noteOnData = "/noteOn ";
