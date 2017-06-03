@@ -187,6 +187,7 @@ void readTouchInputs(int irq, byte addr){
           if(touch2States[i] == 0){
             //pin i was just touched
             touchOut[11+i] = 1;
+            keyNumOn(12+i);
             int note = i+(octave+1)*12;
             if(note <= 0x7F){
               noteOn(0x90, note, volume);  //herer
@@ -205,6 +206,7 @@ void readTouchInputs(int irq, byte addr){
         }else{
           if(touch2States[i] == 1){
              touchOut[11+i] = 0;
+             keyNumOff(12+i);
             int note = i+(octave+1)*12;
             if(note <= 0x7F){
             noteOff(0x80, i+(octave+1)*12, 0x00);
@@ -223,7 +225,7 @@ void readTouchInputs(int irq, byte addr){
       
       }
       // quad small buttons
-      for(int i = 4; i < 8; i++){
+      for(int i = 4; i < 12; i++){
         if(touched & (1<<i)){
           if(quadStates[i-4] == 0){
             //pin i just touched

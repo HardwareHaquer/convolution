@@ -67,7 +67,7 @@ void readKnobs(int k[], int theSize){
     sendRawEnc(enc1.getPos(), enc2.getPos());
     sendModeState(enc1);
     sendModeState(enc2);
-    sendQuadStates(quadStates, 4);
+    sendQuadStates(quadStates, 8);
     knobTimer = millis();
   }
     
