@@ -127,6 +127,7 @@ int[] modeIndex1 =  new int[3];
 void setup() {
   size(800, 480, P2D);
   frameRate(30);
+  println(System.getProperty("os.name"));
   for(int i = 0; i < modeIndex1.length; i++) modeIndex1[i] = 0;
   appletRef = this;
   
@@ -134,7 +135,7 @@ void setup() {
   scales = split(scalesFile[0], ",");
   
   //smooth(2);
-    debounce = new Timer[4];
+    debounce = new Timer[8];
   for(int i = 0; i < debounce.length; i++) debounce[i] = new Timer(500);
   //==========Serial/OSC setup==============
   arduino = new HardwareInput(6,128,2,0);
@@ -142,7 +143,11 @@ void setup() {
   osc = new OscP5(this, 12001);
   address = new NetAddress(HOST, PORT);
  // port = new Serial(this, Serial.list()[SERIAL_PORT], BAUD);
+ if(System.getProperty("os.name").equals("Mac OS X")){
   port = new Serial(this, Serial.list()[Serial.list().length -1], BAUD);
+ }else{
+   port = new Serial(this, Serial.list()[Serial.list().length -2], BAUD);
+ }
   port.bufferUntil('\n');
   //==============================================
   
@@ -330,6 +335,7 @@ void Adjust_Lock(boolean state){
 }
 void Randomize(){
   seq.randomize(seq.randomProb);
+
 }
 void Mute_All(boolean state){
   seq.mute = state;

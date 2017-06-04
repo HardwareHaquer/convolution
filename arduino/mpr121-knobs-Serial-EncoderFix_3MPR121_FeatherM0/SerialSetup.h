@@ -79,7 +79,7 @@ void keyNumOn(int k){
 }
 
 void keyNumOff(int k){
-  String keyOffData = "/keyOn ";
+  String keyOffData = "/keyOff ";
   keyOffData += String(k) + "\n";
   Serial.print(keyOffData);
 }

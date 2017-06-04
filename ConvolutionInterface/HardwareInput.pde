@@ -4,6 +4,8 @@ class HardwareInput{
   int[] notes;
   boolean[] pads;
   boolean[] lastPads;
+  boolean[] padsOrder;
+ 
   boolean[] padChange;
   float[] encoders;
   float mode;
@@ -28,18 +30,21 @@ class HardwareInput{
   
  HardwareInput(int numKnobs, int numNotes, int numEncoders, float initMode){
    smoothSteps = 10;
-   quadPad = new boolean[4];
+   quadPad = new boolean[8];
    funcPads = new boolean[8];
    lastFuncPads = new boolean[funcPads.length];
    funcStates = new boolean[8];
    pads = new boolean[16];
-   lastPads = new boolean[16];
+   lastPads = new boolean[pads.length];
+   padsOrder = new boolean[pads.length];
+   
    knobs = new float[numKnobs];
    smoothKnobs = new float[numKnobs];
    smoothing = new float[smoothSteps][numKnobs];
    for(int i=0; i < pads.length; i++){
       pads[i] = false;
       lastPads[i] = false;
+      padsOrder[i] = false;
     }
    for(int i=0; i < numKnobs; i++) knobs[i] = 0;
    
@@ -98,6 +103,20 @@ class HardwareInput{
    sum[j] = sum[j]/smoothSteps;
    }
      return sum;
+ }
+ 
+ void orderPads(boolean[] p){
+   boolean[] even = new boolean[p.length/2];
+   boolean[] odd = new boolean[p.length/2];
+  for(int i =0; i < even.length; i++){
+    even[i]  = p[2*i];
+   odd[i] = p[2*i+1];
+   
+  }
+ // printArray(even);
+ // printArray(odd);
+  padsOrder = concat(even,odd);
+ // printArray(padsOrder);
  }
  void recordValues(String[] v){
   
@@ -161,20 +180,25 @@ class HardwareInput{
    //println(v[0] + v[1] + v[2]);
    }else if(v[0].equals("/keyOn")){
     int note = int(trim(v[1]));
-    if (enc1Mode == SEQUENCER || enc1Mode == DRUM_MACHINE){
+    if (theMode == SEQUENCER || theMode == DRUM_MACHINE){
      // println("note on: " + note + " | oct: " + encPos + " | note%enc: " + ((note-encPos*12)+(16*(encPos%2))));
       
       lastPads[note] = pads[note];
       pads[note] = true;
+      if(note%2 == 0) padsOrder[note/2] = true;
+      else padsOrder[note/2+8] = true;
     }
      }else if(v[0].equals("/keyOff")){
     int note = int(trim(v[1]));
-    if (enc1Mode == SEQUENCER || enc1Mode == DRUM_MACHINE){
+    if (theMode == SEQUENCER || theMode == DRUM_MACHINE){
      // println("note on: " + note + " | oct: " + encPos + " | note%enc: " + ((note-encPos*12)+(16*(encPos%2))));
       
       lastPads[note] = pads[note];
       pads[note] = false;
+      if(note%2 == 0) padsOrder[note/2] = false;
+      else padsOrder[note/2+8] = false;
     }
+    
     
   }else if(v[0].equals("/noteOn")){
     int note = int(trim(v[2]));
@@ -198,9 +222,9 @@ class HardwareInput{
     notes[note] = 0;
      if (enc1Mode == SEQUENCER || enc1Mode == DRUM_MACHINE){
      // println("note off: " + note + " | oct: " + encPos + " | note%enc: " + ((note-encPos*12)+(16*(encPos%2))));
-      note -= encPos*12;
-      lastPads[note] = pads[note];
-      pads[note] = false;
+      //note -= encPos*12;
+      //lastPads[note] = pads[note];
+      //pads[note] = false;
     }
           //for(int i=0; i < notes.length; i++){
           //  print(notes[i] + " ");
@@ -220,15 +244,15 @@ class HardwareInput{
        // println(v[0] + ": " + rawEnc1[0] + " | " + rawEnc1[1]);
   }else if(v[0].equals("/buttons")){
    // print(v[0] + " : ");
-    for(int z = 1; z < v.length; z++){
-      int padVal = int(trim(v[z]));
-      if(padVal ==1) quadPad[z-1] = true;
-      else{ 
-        quadPad[z-1] = false;
-       debounce[z-1].finish();
-      }
-     // print(quadPad[z-1] + " | " );
-    }
+    //for(int z = 1; z < v.length; z++){
+    //  int padVal = int(trim(v[z]));
+    //  if(padVal ==1) quadPad[z-1] = true;
+    //  else{ 
+    //    quadPad[z-1] = false;
+    //   debounce[z-1].finish();
+    //  }
+    // // print(quadPad[z-1] + " | " );
+    //}
     lastFuncPads = funcPads;
     for(int z = 1; z < v.length; z++){
       lastFuncPads[z-1] = funcPads[z-1];
