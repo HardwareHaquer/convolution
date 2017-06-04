@@ -239,7 +239,9 @@ void setRandomProb(HardwareInput a){
   //} 
   void setButtonStates(HardwareInput a){
     for(int i=0; i < allNames.length; i++){
+      
       if(a.funcPads[i] == true && funcDebounce[i].isFinished()){
+       // printArray(allNames);
         boolean state;
      if(i < toggleNames.length){
        state =  cp5.get(Toggle.class, allNames[i]).getState();

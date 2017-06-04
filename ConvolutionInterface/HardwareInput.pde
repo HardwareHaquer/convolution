@@ -28,7 +28,7 @@ class HardwareInput{
   
  HardwareInput(int numKnobs, int numNotes, int numEncoders, float initMode){
    smoothSteps = 10;
-   quadPad = new boolean[4];
+   quadPad = new boolean[8];
    funcPads = new boolean[8];
    lastFuncPads = new boolean[funcPads.length];
    funcStates = new boolean[8];
@@ -161,6 +161,7 @@ class HardwareInput{
    //println(v[0] + v[1] + v[2]);
    }else if(v[0].equals("/keyOn")){
     int note = int(trim(v[1]));
+    //println(note);
     if (enc1Mode == SEQUENCER || enc1Mode == DRUM_MACHINE){
      // println("note on: " + note + " | oct: " + encPos + " | note%enc: " + ((note-encPos*12)+(16*(encPos%2))));
       

@@ -134,7 +134,7 @@ void setup() {
   scales = split(scalesFile[0], ",");
   
   //smooth(2);
-    debounce = new Timer[4];
+    debounce = new Timer[8];
   for(int i = 0; i < debounce.length; i++) debounce[i] = new Timer(500);
   //==========Serial/OSC setup==============
   arduino = new HardwareInput(6,128,2,0);
@@ -142,7 +142,7 @@ void setup() {
   osc = new OscP5(this, 12001);
   address = new NetAddress(HOST, PORT);
  // port = new Serial(this, Serial.list()[SERIAL_PORT], BAUD);
-  port = new Serial(this, Serial.list()[Serial.list().length -1], BAUD);
+  port = new Serial(this, Serial.list()[Serial.list().length -2], BAUD);
   port.bufferUntil('\n');
   //==============================================
   

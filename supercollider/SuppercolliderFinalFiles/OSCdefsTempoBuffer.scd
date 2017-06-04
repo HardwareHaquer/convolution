@@ -100,7 +100,7 @@ OSCdef(\getSeqAmp, {|msg|                /*GetBPM listens for BPM message from P
 	temp = msg[1];
 	~seqAmp.source =(Pseq([1.0], inf));
 	~testSeqAmp = msg[1];
-	msg.postln;
+	//msg.postln;
 	//~seqAmp.source.postln;
 }, "/volume");
 
@@ -110,7 +110,7 @@ OSCdef(\getSlideMode, {|msg|                /*GetBPM listens for BPM message fro
 	~seqLegato = msg[1];
 	//~seqAmp.source =(Pseq([1.0], inf));
 	//~testSeqAmp = msg[1];
-	msg.postln;
+	//msg.postln;
 	//~seqAmp.source.postln;
 }, "/Slide");
 
