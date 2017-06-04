@@ -67,7 +67,7 @@ void readKnobs(int k[], int theSize){
     sendRawEnc(enc1.getPos(), enc2.getPos());
     sendModeState(enc1);
     sendModeState(enc2);
-    sendQuadStates(quadStates, 4);
+    sendQuadStates(quadStates, 8);
     knobTimer = millis();
   }
     
@@ -79,7 +79,7 @@ void keyNumOn(int k){
 }
 
 void keyNumOff(int k){
-  String keyOffData = "/keyOn ";
+  String keyOffData = "/keyOff ";
   keyOffData += String(k) + "\n";
   Serial.print(keyOffData);
 }

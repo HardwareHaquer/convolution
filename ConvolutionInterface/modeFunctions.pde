@@ -69,7 +69,7 @@ void dmMode(){
   background(0);
 
   fill(255, 100);
-  seq.setInstSteps(arduino, listIndex);
+  seq.setInstStepsO(arduino, listIndex);
   seq.setButtonStates(arduino);
   seq.setEncMode();
    seq.update();

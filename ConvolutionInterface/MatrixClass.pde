@@ -10,6 +10,7 @@ class Matricks {
   String[] instNames;
   Timer time;
   Timer[] funcDebounce;
+  Timer[] padTimer;
   int mHeight;
   int mWidth;
   float randomProb = 0.31;
@@ -113,6 +114,8 @@ class Matricks {
      for( int i = 0; i < funcDebounce.length; i++){
        funcDebounce[i] = new Timer(500);
      }
+     padTimer = new Timer[arduino.pads.length];
+   for (int i = 0; i < padTimer.length; i++) padTimer[i] = new Timer(100);
      
      //String _gName, String[] _names, float _gX, float _gY, int _w, int _h
   //   b = new ButtonGroup("Controls", buttons, 5, 5, width/2,10);
@@ -273,6 +276,28 @@ void setRandomProb(HardwareInput a){
         state = !state;
         cp5.get(Matrix.class, matrixName).set(dex, index, state);
         a.pads[i] = false;
+      }
+      //print(dex + " : " + boolean(a.notes[i]) +" | ");
+    }
+    //println();
+  } 
+  
+  void setInstStepsO(HardwareInput a, int index){
+    
+    int encPos = (int)a.encoders[0];
+    int start  = encPos*12;
+    int end;
+    if (encPos > 9) end = 128;
+    else end = start + 16;
+   // println("start: " + start + " | End: " + end + " | " + a.encoders[0]);
+    for(int i = 0; i < a.padsOrder.length; i++){
+      int dex = i + 16*(encPos%2);
+      
+      if(a.padsOrder[i] == true){
+        boolean state  = cp5.get(Matrix.class, matrixName).get(dex, index);
+        state = !state;
+        cp5.get(Matrix.class, matrixName).set(dex, index, state);
+        a.padsOrder[i] = false;
       }
       //print(dex + " : " + boolean(a.notes[i]) +" | ");
     }
