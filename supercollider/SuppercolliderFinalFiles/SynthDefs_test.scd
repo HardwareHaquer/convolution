@@ -1,10 +1,30 @@
 //Synth def examples for Convolution
 
 //just for testing
+(
+// send a synth def to server
+SynthDef("tpulse", { arg out = 0,freq = 700, sawFreq = 440.0;
+    Out.ar(out, SyncSaw.ar(freq, sawFreq, 0.1));
+}).add;
+)
 
+(
+x = {
+    MoogFF.ar(
+        Pulse.ar([40,121], [0.3,0.7]),
+        SinOsc.kr(LFNoise0.kr(0.42).range(0.001, 2.2)).range(30, 4200),
+        0.83 * 4)}.play(s);
+)
+x.free;
 
+x = { MoogFF.ar(WhiteNoise.ar(01.1), MouseY.kr(100, 10000, 1), MouseX.kr(0, 4)) }.play(s);
+x.free;
 
-
+~synths = [\beeu, "\ueeb", "\help_sinegrain", "tpulse"];
+x = Synth(~synths[1],[\freq, 440]);
+s.plotTree;
+x=Synth("default");
+x.free;
 (
 SynthDef(\beeu, { |freq = 1000|
 	var sig, env;
@@ -51,6 +71,7 @@ SynthDef(\funSynth, {
 	var env = EnvGen.kr(linen,gate, doneAction: 2);
 	Out.ar(0, sound*env);
 }).add;
+
 
 SynthDef("Moog",{
 

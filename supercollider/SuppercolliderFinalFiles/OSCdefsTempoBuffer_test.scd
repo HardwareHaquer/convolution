@@ -1,8 +1,15 @@
 //~scales = Scale.spanish;
 //Scale.directory;
 //variable definitions
+Scale.at(\ionian).postln;
+Scale.names.postln;
+~theScale = Scale.names[5];
+~scales = Scale.directory;
+~scales[3].postln;
+~mult.postln;
 (
 //~stepSeqPatternProxy = PatternProxy(Pn(Pseries(0, 2, 12), inf));
+~mult = 1.0;
 ~testSeqAmp =0.5;
 ~seqLegato = 0.5;
 ~scales = Scale.minor;
@@ -73,6 +80,7 @@ v = Main.elapsedTime.ceil;
 // create two clocks, starting at time v.
 t = TempoClock(1, 0, v);
 u = TempoClock(t.tempo*8, 0, v);
+x = TempoClock(t.tempo*~mult, 0, v);
 
 // start two functions at beat zero in each clock.
 // t controls u's tempo. They should stay in sync.
@@ -96,7 +104,7 @@ u.schedAbs(0, { arg beat, sec; /*["/tick", beat%32, "hrlp","more"].postln;*/b.se
 OSCdef(\getbpm, {|msg|                /*GetBPM listens for BPM message from Processing*/
 	~mainTempo = msg[1]/60;
 	t.tempo = ~mainTempo;
-	u.tempo = t.tempo*8;
+	x.tempo = t.tempo*~mult;
 	//msg.postln;
 }, "/bpm");
 
@@ -108,6 +116,18 @@ OSCdef(\getSeqAmp, {|msg|                /*GetBPM listens for BPM message from P
 	//msg.postln;
 	//~seqAmp.source.postln;
 }, "/volume");
+
+OSCdef(\getTempoMult, {|msg|                /*GetBPM listens for BPM message from Processing*/
+	   var temp;
+	temp = msg[1];
+	~mult = msg[1];
+	t.tempo = ~mainTempo;
+	x.tempo = t.tempo*~mult;
+	//~seqAmp.source =(Pseq([1.0], inf));
+	//~testSeqAmp = msg[1];
+	~mult.postln;
+	//~seqAmp.source.postln;
+}, "/seqMult");
 
 OSCdef(\getSlideMode, {|msg|                /*GetBPM listens for BPM message from Processing*/
 	   var temp;
@@ -462,7 +482,7 @@ OSCdef(\synth2, { |msg|
 
 ).play(t, quant: 1);
 
-~stepstep =  PmonoArtic(\sawpulse, \dur, 0.125, \degree, ~stepSeqDegrees, \root, ~rootNotesDegrees, \legato, Pfunc{~seqLegato}, \amp, Pfunc{~testSeqAmp} ).play(t, quant: 1);
+~stepstep =  PmonoArtic(\sawpulse, \dur, 0.125, \degree, ~stepSeqDegrees, \root, ~rootNotesDegrees, \legato, Pfunc{~seqLegato}, \amp, Pfunc{~testSeqAmp} ).play(x, quant: 1);
 
 )
 /*(

@@ -3,9 +3,13 @@ void seqMode(){
   fill(255,0,255);
   cp5.getController("label").setVisible(false);
   musicMaker.setVisibility(true);
-  musicMaker.updateSeqRowIndex();
+   musicMaker.setEncMode();
+  //musicMaker.updateSeqRowIndex();
   musicMaker.setButtonStates(arduino);
-  musicMaker.stepCount(cp5.get(Slider.class, "stepCount").getValue());
+ 
+    musicMaker.stepCount(cp5.get(Slider.class, "stepCount").getValue());
+  
+    
   
   musicMaker.setSeqSteps(arduino, seqRowIndex);
   musicMaker.drawExtras();
@@ -24,6 +28,7 @@ void leadMode(){
  background(0);
     fill(255,0,255);
     shiftRoot();
+    updateScale();
     if(arduino.encoders[0] != arduino.lastEncode[0]){
       updateRootText();
       sendRoot();
@@ -85,6 +90,6 @@ void dmMode(){
 //double used  = (double)((Runtime.getRuntime().totalMemory()/1024 - Runtime.getRuntime().freeMemory()/1024)/1024);
 //println("total: " + total + " Used: " + used); 
   seq.drawExtras();
-  setBPM();
+  //setBPM();
   
 }
