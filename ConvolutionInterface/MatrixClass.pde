@@ -7,6 +7,7 @@ class Matricks {
   int interval;
   int numInsts;
   int numSteps;
+  int activeSet = 0;
   String[] instNames;
   Timer time;
   Timer[] funcDebounce;
@@ -193,9 +194,15 @@ void setRandomProb(HardwareInput a){
   }
  void drawExtras(){
     rectMode(CENTER);
+    fill(0,200,150);
+    if(activeSet == 0){
+      rect(width/4,height-mHeight-(gap), width/2, 50);
+    }else{
+      rect(3*width/4,height-mHeight-(gap), width/2, 50);
+    }
     fill(255,0,255);
     float spacing  = width/numSteps*(cnt%numSteps+1);
-    rect(spacing-(width/numSteps)/2,height-mHeight-(gap), width/numSteps-gap*2, 20); 
+    rect(spacing-(width/numSteps)/2,height-mHeight-(2*gap), width/numSteps-gap*2, 20); 
     rectMode(CORNER); 
     
     cp5.getController("current").setPosition(0,(height-mHeight-25)+(25*listIndex)+10);
@@ -284,12 +291,13 @@ void setRandomProb(HardwareInput a){
     
     int encPos = (int)a.encoders[0];
     int start  = encPos*12;
+    activeSet = encPos%2;
     int end;
     if (encPos > 9) end = 128;
     else end = start + 16;
    // println("start: " + start + " | End: " + end + " | " + a.encoders[0]);
     for(int i = 0; i < a.padsOrder.length; i++){
-      int dex = i + 16*(encPos%2);
+      int dex = i + 16*(activeSet);
       
       if(a.padsOrder[i] == true){
         boolean state  = cp5.get(Matrix.class, matrixName).get(dex, index);
@@ -303,7 +311,7 @@ void setRandomProb(HardwareInput a){
   } 
   
   void setEncMode(){
-    int currMode = arduino.getMode(1)%encModes.length;
+    int currMode = arduino.rawEnc2Mode % encModes.length;
   if(arduino.enc2ModeFlg == true){
    cp5.get(Textlabel.class,"EncoderMode").setText("Encoder Mode: " + encModes[currMode]);
    arduino.enc2ModeFlg = false;

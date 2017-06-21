@@ -664,6 +664,7 @@ void randomize(){
       modeChgFlag = false;
       a.rawEnc1[1] = a.rawEnc1[0];
     }
+   
     
     //int encPos = ((int)a.encoders[0] % 5) + 1;
                //Alows the tall rotary encoder to change the value of the stepCount Slider.
@@ -682,7 +683,7 @@ void randomize(){
             sequencerButtons.set(column, (yNotes - 2) - (i / 2), !sequencerButtons.get(column, (yNotes - 2) - (i / 2)));
           a.pads[i] = false;               // Otherwise, we'll leave it off from when we cleared the entire row.
         }
-        else if(column < xRootNotes){                              //Split the buttons into two sets. This set activates the next row forward.
+        else {                              //Split the buttons into two sets. This set activates the next row forward.
           if(sequencerButtons.get(column + 1, (yNotes - 2) - (i / 2)))
             pushedButton = true;          //If the cell that matches the button that was pushed was active, set PushedButton to true.
           clearRow(column + 1);           //Clear the row of the cell that was pushed to ensure only one cell gets activated at a time.
@@ -837,6 +838,7 @@ void setVisibility(boolean vis){
    root_notes.show();
    lock.show();
    Send.show();
+   cp5.get(Textlabel.class,"seqEncMode").show();
   }else{
     
     
@@ -851,6 +853,7 @@ void setVisibility(boolean vis){
    root_notes.hide();
    Send.hide();
    lock.hide();
+   cp5.get(Textlabel.class,"seqEncMode").hide();
     
     
   }
@@ -999,7 +1002,7 @@ void updateSeqRowIndex(){
      }else{
        //button code here fuck
        cp5.get(Button.class, buttons[i-toggles.length]).setValue(1);
-       println("we tried");
+      
      }
      a.funcPads[0] = false;
     
@@ -1031,25 +1034,25 @@ void updateSeqRowIndex(){
   }
   
   void setEncMode(){
-    int currMode = arduino.getMode(1)%encModes.length;
+    int currMode = arduino.rawEnc2Mode % encModes.length;
+    
   if(arduino.enc2ModeFlg == true){
    cp5.get(Textlabel.class,"seqEncMode").setText("Input Mode: " + encModes[currMode]);
    arduino.enc2ModeFlg = false;
   }
    switch(currMode){
      case 0:  //Column Select
-     //cp5.get(Textlabel.class, "RandomProb").hide();
+     
      updateSeqRowIndex();
      break;
      
      case 1:  //Synth Select
-     //cp5.get(Textlabel.class, "RandomProb").hide();
+     
      
      break;
      
      case 2:  //BPM
-     //cp5.get(Textlabel.class, "RandomProb").hide();
-    // println(arduino.encChangeFlag);
+     
      updateBPM();
      
      cp5.get(Textlabel.class,"seqEncMode").setText("Input Mode: " + encModes[currMode] + ": " + bpm);
