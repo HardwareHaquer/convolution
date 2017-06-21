@@ -11,6 +11,8 @@ class HardwareInput{
   float mode;
   int enc1Mode = 0;
   int enc2Mode = 0;
+  int rawEnc1Mode = 0;
+  int rawEnc2Mode = 0;
   boolean enc1ModeFlg = false;
   boolean enc2ModeFlg = false;
   float[] lastEncode;
@@ -171,11 +173,17 @@ class HardwareInput{
    if(int(trim(v[1])) == 0){
      enc1Mode = int(trim(v[2])) % tModes; 
      
-     if(lastEnc1 != enc1Mode) enc1ModeFlg = true;
+     if(lastEnc1 != enc1Mode){
+       enc1ModeFlg = true;
+       rawEnc1Mode++;
+     }
    }
    if(int(trim(v[1])) == 1){
      enc2Mode = int(trim(v[2]));
-     if(lastEnc2 != enc2Mode) enc2ModeFlg = true;
+     if(lastEnc2 != enc2Mode){
+       enc2ModeFlg = true;
+       rawEnc2Mode++;
+     }
    }
    //println(v[0] + v[1] + v[2]);
    }else if(v[0].equals("/keyOn")){

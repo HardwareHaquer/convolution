@@ -50,6 +50,10 @@ Instrument bass;
 Instrument[] insts;
 EffectsGroup efg;
 
+ int BUTTON = 0;
+ int TOGGLE = 1;
+
+
 Timer[] debounce;
 Timer instDsplyTime;
 boolean instDisplay = true;
@@ -386,6 +390,12 @@ void sendScale(int scaleNum){
   scaleName.add(scaleNum);
   osc.send(scaleName, address);
 }
+
+void sendSeqMult(float mult){
+  OscMessage multName = new OscMessage( "/seqMult" );
+  multName.add(mult);
+  osc.send(multName, address);
+}
 void sendRoot(){
   OscMessage scaleRoot = new OscMessage( "/root" );
   scaleRoot.add(12*(int)arduino.encoders[0]+root);
@@ -402,7 +412,7 @@ void shiftRoot(){
    
     sendRoot();
     updateRootText();
-  }else if(arduino.quadPad[0] == true && debounce[0].isFinished() ){
+  }else if(arduino.funcPads[0] == true && debounce[0].isFinished() ){
     //arduino.quadPad[0] = false;
     root--;
     if(root < 0) root = noteNames.length-1;

@@ -9,7 +9,7 @@ s.killAll
 s.quit;
 s.freeAll
 s.reboot
-Scale.minor.size.postln;
+Scale.pelog.ratios.postln;
 Scale.directory
 s.plotTree;
 s.meter;
@@ -228,14 +228,15 @@ SynthDef("am1", {arg freq = 200, modfreq = 5, amp = 0.4, att = 0.01, rel = 3, ou
 )
 x = Synth(\am1,[\out, ~reverbBus], ~srcGroup);
 x.free;
-
+x = Synth(\ay1, [\out,0, \freqa, 400, \freqb, 220]);
+x.free;
 (
 SynthDef(\ay1, { | freqa=440, freqb=550, freqc=660, vola=7, volb=15, volc=10, chink=1, wobbly=1, pan=0, amp=0.1, gate=1, out|
     var ay, chinkenv, wobblyenv;
 
     //chinkenv = if(chink>0, EnvGen.kr(Env.new([0.06125, 0.06125, 1, 1], [0.05, 0, 0.1], 0, 4, 4)), 1);
     chinkenv = if(chink>0, EnvGen.kr(Env.new([2, 2, 1, 1], [0.05, 0, 0.1], 0, 4, 4)), 1);
-    wobblyenv = LFPulse.kr(10, 0.5, mul:wobbly).range(0.5, 0.5);
+    wobblyenv = LFPulse.kr(10, 0.5, mul:wobbly).range(0.5, 1);
 
     # freqa, freqb, freqc = [freqa, freqb, freqc] * [1, wobblyenv, wobblyenv] * chinkenv;
     ay = AY.ar(AY.freqtotone(freqa), AY.freqtotone(freqb), AY.freqtotone(freqc),
@@ -245,7 +246,7 @@ SynthDef(\ay1, { | freqa=440, freqb=550, freqc=660, vola=7, volb=15, volc=10, ch
 }).add;
 )
 (
-Pbind(
+y =Pbind(
     \instrument, \ay1,
     \freqa,    Pseq((#[55, 55, 57, 58, 57, 55, 58, 50]-12).midicps, inf),
     \freqb,    Pseq([
@@ -260,7 +261,8 @@ Pbind(
     \amp,    0.4
 ).play
 )
-
+y.stop;
+y = Synth(\ay1, [\wobbly, 0, \chink, 1, \tonea, 1000.rand]);
 s.killAll
 s.quit
 

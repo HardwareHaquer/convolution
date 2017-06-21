@@ -55,6 +55,8 @@ class StepSequencer {
 */
  private int tempo;
  
+ private float seqNoteDur;
+ 
  /**
  *Defines the X(horizontal) position of the Radio Button (used to change musical keys) on the screen.
  */
@@ -138,6 +140,9 @@ class StepSequencer {
 */
  private int lastXRootNotes;
  
+ private float savedStepCount;
+ private float savedRootCount;
+ 
  /**
  * A variable to keep track of the number of horizontal cells in the matrix at all times.
  */
@@ -159,13 +164,21 @@ class StepSequencer {
  */
  private IntList lastSelectedRootNotes = new IntList();
  
+ String[] encModes = {"Column Select", "Synth Select", "BPM", "Random Probability", "BPM Steps", "Scale", "Tempo Multiplier"};
  
+ /*Sets the order of the buttons as laid out on the interface function buttons.  If you add/take away buttons be sure to update this*/
+private int[] buttonOrder =  { TOGGLE , TOGGLE ,TOGGLE , BUTTON, TOGGLE,  BUTTON, TOGGLE};
  
- private String[] toggles = {"root_notes", "slide_Mode", "loop", "mute"};
- 
+ /*string names of the toggles*/
+ private String[] toggles = {"root_notes", "slide_Mode", "loop", "mute", "lock"};
+ /*string name of the buttons*/
  private String[] buttons = {"random", "send"};
- 
+ /*All names together get ordered based on buttonOrder in constructor*/
  String [] buttonNames = concat(toggles, buttons);
+ 
+
+ 
+ 
  
  private int bWidth;
  /**
@@ -217,6 +230,11 @@ class StepSequencer {
  */
  private Button Send;
  
+ /* toggle whether or not to update length of sequence */
+ private Toggle lock;
+ 
+ private boolean lockFlag = false;
+ 
  private Slider volume;
  
  private CallbackListener cb;  
@@ -233,6 +251,7 @@ public StepSequencer(String _matrixName){
   MDHIndex = xSteps;
   yNotes = 9;
   tempo = 200;
+  seqNoteDur = 1;
   posMatrix_X = 90;
   posMatrix_Y = 20;
   sizeMatrix_X = 608; //safe: 592, 608, 624 (add 16). Turns out, the size of the matrix needs to be evenly divisible by the number of cells in each direction.
@@ -255,6 +274,16 @@ public StepSequencer(String _matrixName){
      for( int i = 0; i < funcDebounce.length; i++){
        funcDebounce[i] = new Timer(500);
      }
+    cp5.addTextlabel("seqEncMode")
+      .setText("Input Mode: " + encModes[arduino.getMode(1)%2])
+      .setPosition(50, 440)
+      .setSize(100,5)
+      .setColorValue(0xffff00ff)
+      .setFont(createFont("AvenirNext-DemiBold",20))
+      //.setMultiline(true)
+      .setLineHeight(0)
+      .setVisible(true)
+      ;
   
   sequencerButtons = cp5.addMatrix(matrixName)
     .setPosition(posMatrix_X,posMatrix_Y)
@@ -314,7 +343,7 @@ public StepSequencer(String _matrixName){
     bWidth = ((width-90)-bGap*(buttonNames.length+1))/buttonNames.length;
    // (width-buttonGap*(totalButtons+2))/totalButtons;
     
-  root_notes = cp5.addToggle("root_notes")
+  root_notes = cp5.addToggle("root_notes")  
     .setPosition(((bWidth+bGap)*0)+90, posButton_Y)
     .setSize(bWidth,30)
     .setId(101)
@@ -355,6 +384,27 @@ public StepSequencer(String _matrixName){
     //.setHeight(60)
     .setId(106)
     ;
+    
+    lock = cp5.addToggle("lock")
+    .setPosition(((bWidth+bGap)*6)+90, posButton_Y)
+    .setSize(bWidth,30)
+    //.setHeight(60)
+    .setId(107)
+    ;
+    lock.getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER).setPaddingX(0);
+    int cTogg = 0;
+    int cButt = 0;
+     for(int i =0; i < buttonOrder.length; i++){  //Use buttonOrder array to set buttonNames to the correct order for getting input from interface.  Allows for changing number of buttons and mixing toggles/buttons
+       
+       if(buttonOrder[i] == TOGGLE){
+         buttonNames[i] = toggles[cTogg];
+         cTogg++;
+       }else{
+         buttonNames[i] = buttons[cButt];
+         cButt++;
+       }
+     }
+     
     
         //When this button (the send button) is pressed, the program calls the sendMatrixOsc function,
         //vwhich sends an osc message of the currently selected cells to the synthesizer.
@@ -437,24 +487,43 @@ public StepSequencer(String _matrixName){
     }
   }
   );
-
+  lock.addCallback(new CallbackListener() {
+    public void controlEvent(CallbackEvent anEvent){
+      if (anEvent.getAction() == ControlP5.ACTION_BROADCAST){
+      // println("lock is " + lock.getBooleanValue());
+       if(!lock.getBooleanValue() && lockFlag){  //when lock is turned off and flag is set change stepcount slider postion back to same as when lock was set.
+        // println("Step: " + savedStepCount + " Root: " + savedRootCount);
+         if(root_notes.getBooleanValue()) cp5.get(Slider.class, "stepCount").setValue(savedRootCount);
+         else cp5.get(Slider.class, "stepCount").setValue(savedStepCount);
+         lockFlag = false;
+       }
+      }
+    }
+  }
+  );  
+  
 //This button (the root_notes button) allows the user to switch between sequencer mode and root notes mode.
   root_notes.addCallback(new CallbackListener() {
     public void controlEvent(CallbackEvent theEvent) {
-      if (theEvent.getAction()!=ControlP5.ACTION_RELEASE) {
+     
+       if(theEvent.getAction() == ControlP5.ACTION_BROADCAST){
+       // println(ControlP5.ACTION_ENTER + " : " + theEvent.getAction());
+       lock.setValue(true);
+       lockFlag = true;
         saveRecentCells();      //When the button is pressed, save a list of the cells that were active for future reference when the user returns.
         
         if(root_notes.getBooleanValue()){    //Split here because the values are different for entering root notes mode and entering sequencer mode.
           stepCount.setValue(xRootNotes - 1);          //Change the size of the matrix to show the root note, 
           sequencerButtons.setGrid(xRootNotes,yNotes); // And change the value of the step count slider to reflect that change.
           MDHIndex = xRootNotes;
-          
+          seqRowIndex = 0;
           for(int i = 0; i < Math.min(xRootNotes, selectedRootNotes.size()); i++){     //Sets the appropriate cells on the matrix to true.
             sequencerButtons.set(i, (yNotes - 2) - selectedRootNotes.get(i), true);    // This means that if the user has set cells in this
           }                                                         // mode before, it will set the most recent active cells to the matrix. 
         }                                                           // If the user has not set any cells in this mode yet, or the matrix 
         else{                                                       // was blank when the user switched the mode last,the bottom row of cells is set.
         MDHIndex = xSteps;
+        seqRowIndex = 0;
           switch(xSteps){                                                    
             case(2): cp5.get(Slider.class,("stepCount")).setValue(1); break;  //Changes the size of the matrix to show the sequencer mode,
             case(3): cp5.get(Slider.class,("stepCount")).setValue(2); break;  // and changes the value of the step count slider to reflect that change
@@ -462,6 +531,7 @@ public StepSequencer(String _matrixName){
             case(8): cp5.get(Slider.class,("stepCount")).setValue(4); break;
             case(16): cp5.get(Slider.class,("stepCount")).setValue(5); break;
           }
+          
           sequencerButtons.setGrid(xSteps,yNotes);
           for(int i = 0; i < Math.min(xSteps, activeCells.size()); i++){      //Sets the appropriate cells on the matrix to true.
             sequencerButtons.set(i, (yNotes - 2) - activeCells.get(i), true); // This means that if the user has set cells in 
@@ -490,7 +560,10 @@ private void selectKeys(int button){
 */
 void stepCount(float countSeq){
   //if (modeChgFlag == true)
+  if(!lock.getBooleanValue()){
+   
   if(!root_notes.getBooleanValue()){  //Checks to see if the matrix is in root note mode or sequencer mode.
+   savedStepCount = countSeq;
     lastXSteps = xSteps;//In this case, the matrix is in sequencer mode.
     switch(str(int(countSeq))){
       case("1"):xSteps = 2; break;  //Uses pre-determined values for the number of buttons. 
@@ -508,6 +581,7 @@ void stepCount(float countSeq){
     }
   }
   else{
+     savedRootCount = countSeq;
     lastXRootNotes = xRootNotes;  //In this case, the matrix is in root note mode.
     switch(str(int(countSeq))){
       case("1"):xRootNotes = 2; break;
@@ -523,6 +597,7 @@ void stepCount(float countSeq){
       else sequencerButtons.setSize(sizeMatrix_X, sizeMatrix_Y);          // matrix caused by the size of the matrix not 
       sequencerButtons.setGrid(xRootNotes,yNotes);                        // being divisible by the number of buttons in it.
     }
+  }
   }
 }
 
@@ -583,12 +658,13 @@ void randomize(){
      
         stepCount.setValue(currStepCount); //Checks to see if the matrix is in root note mode or sequencer mode.
      
-      println(currStepCount + " :currStep " + (int)a.rawEnc1[0] + " :[0]" +  (int)a.rawEnc1[1] + " :[1]");
+     // println(currStepCount + " :currStep " + (int)a.rawEnc1[0] + " :[0]" +  (int)a.rawEnc1[1] + " :[1]");
     }
     else {
       modeChgFlag = false;
       a.rawEnc1[1] = a.rawEnc1[0];
     }
+   
     
     //int encPos = ((int)a.encoders[0] % 5) + 1;
                //Alows the tall rotary encoder to change the value of the stepCount Slider.
@@ -607,7 +683,7 @@ void randomize(){
             sequencerButtons.set(column, (yNotes - 2) - (i / 2), !sequencerButtons.get(column, (yNotes - 2) - (i / 2)));
           a.pads[i] = false;               // Otherwise, we'll leave it off from when we cleared the entire row.
         }
-        else{                              //Split the buttons into two sets. This set activates the next row forward.
+        else {                              //Split the buttons into two sets. This set activates the next row forward.
           if(sequencerButtons.get(column + 1, (yNotes - 2) - (i / 2)))
             pushedButton = true;          //If the cell that matches the button that was pushed was active, set PushedButton to true.
           clearRow(column + 1);           //Clear the row of the cell that was pushed to ensure only one cell gets activated at a time.
@@ -689,7 +765,7 @@ private void saveActiveCells(){
   }
   else{    //In this case, the matrix is in root notes mode.
     selectedRootNotes.clear();  
-    println("xRootNotes: " + xRootNotes);
+    
     for(int i = 0; i < xRootNotes; i ++){//Iterates across the matrix column by column
       k = 0;
       for (int j = 0; j < yNotes; j++){ //iterates down the matrix row by row
@@ -725,10 +801,16 @@ private void saveRecentCells(){  // it will practically only be called when the 
     }                                        // so, we'll save the number corresponding to the bottom cell to signify a rest.
   }
   else{
-    selectedRootNotes.clear();            //In this case, we're back in sequencer mode, so the function wants to save the cells
-    for(int i = 0; i < xRootNotes; i ++){ // that were just active in the root_notes mode.
+    selectedRootNotes.clear(); 
+    //Problem here when using screen interface when the button is hit with cursor it crashes so currently disabled all input except broadcast
+  //  int[][] temp = sequencerButtons.getCells();
+    //println("matrix x: " + temp.length + " matrix y: " + temp[1].length);
+  //  if(temp.length != xRootNotes) sequencerButtons.setGrid(xRootNotes,yNotes); 
+   //In this case, we're back in sequencer mode, so the function wants to save the cells
+    for(int i = 0; i < xRootNotes; i++){ // that were just active in the root_notes mode.
       k = 0;          //K counts the number of active cells in each (vertical) column.
       for (int j = 0; j < yNotes; j++){
+      //  println("i: " + i + " j: "+ j + " yNotes: " + yNotes + " xRootNotes: " + xRootNotes);
         if (sequencerButtons.get(i,j)){
           k++;                                       //If it finds an active cell, it increases K to count it
           selectedRootNotes.append((yNotes - 2) - j);// and adds the corresponding number to the list.
@@ -736,6 +818,7 @@ private void saveRecentCells(){  // it will practically only be called when the 
       }
       if (k == 0) selectedRootNotes.append(-1); //If k = 0, then no cells in the column were active,
     }                                           // so we'll save the number corresponding to the bottom cell. as a place holder.
+  
   }
 }
 
@@ -753,7 +836,9 @@ void setVisibility(boolean vis){
    loop.show();
    slide_mode.show();
    root_notes.show();
+   lock.show();
    Send.show();
+   cp5.get(Textlabel.class,"seqEncMode").show();
   }else{
     
     
@@ -767,6 +852,8 @@ void setVisibility(boolean vis){
    slide_mode.hide();
    root_notes.hide();
    Send.hide();
+   lock.hide();
+   cp5.get(Textlabel.class,"seqEncMode").hide();
     
     
   }
@@ -853,7 +940,7 @@ void drawExtras(){
     if (seqRowIndex > xSteps) seqRowIndex = 0;
   }
   else{ stepper = xRootNotes;
-  if (seqRowIndex > xRootNotes) seqRowIndex = 0;
+  if (seqRowIndex > xRootNotes-2) seqRowIndex = 0;
   }
   //updateSeqRowIndex();
   
@@ -871,7 +958,24 @@ void drawExtras(){
   rect(posMatrix_X + buttonSpacing, posMatrix_Y + sizeMatrix_Y, matrixWidth/(stepper), 20);
   //println("seqRowIndex: " + seqRowIndex + "matrix width: " + matrixWidth + " stepper: " + stepper);
 }
-
+void setSeqNoteDuration(){
+  if(arduino.encChangeFlag == true){
+    arduino.encChangeFlag = false;
+  if( arduino.rawEnc2[0] > arduino.rawEnc2[1]){
+       
+       seqNoteDur *=2;
+       if(seqNoteDur > 8) seqNoteDur = 8;
+     }else if(arduino.rawEnc2[0] < arduino.rawEnc2[1]){
+       
+       seqNoteDur /= 2;
+       
+       if (seqNoteDur < 0.125/2) seqNoteDur = 0.125/2;
+       
+     }
+     sendSeqMult(seqNoteDur);
+  }
+}
+  
 void updateSeqRowIndex(){
   if(arduino.encChangeFlag == true){
     arduino.encChangeFlag = false;
@@ -887,8 +991,8 @@ void updateSeqRowIndex(){
   }
 }
 
-  void setButtonStates(HardwareInput a){
-    for(int i=0; i < buttonNames.length; i++){
+  void setButtonStatesOld(HardwareInput a){
+    for(int i=0; i < buttonOrder.length; i++){
       if(a.funcPads[i] == true && funcDebounce[i].isFinished()){
         boolean state;
      if(i < toggles.length){
@@ -898,7 +1002,7 @@ void updateSeqRowIndex(){
      }else{
        //button code here fuck
        cp5.get(Button.class, buttons[i-toggles.length]).setValue(1);
-       println("we tried");
+      
      }
      a.funcPads[0] = false;
     
@@ -906,5 +1010,80 @@ void updateSeqRowIndex(){
    // if((i >= toggleNames.length) && cp5.get(Button.class, allNames[i]).isOn() && funcDebounce[i].isFinished()) cp5.get(Button.class, allNames[i]).setOff();
     }
   }
+  void setButtonStates(HardwareInput a){  //check for input from interface and set button/toggle values accordingly.
 
+    for(int i=0; i < buttonOrder.length; i++){
+      
+      if(a.funcPads[i] == true && funcDebounce[i].isFinished()){
+        boolean state;
+     if(buttonOrder[i] == TOGGLE){
+       state =  cp5.get(Toggle.class, buttonNames[i]).getState();
+       state = !state;
+       cp5.get(Toggle.class, buttonNames[i]).setState(state);
+       
+     }else{
+       //button code here fuck
+       cp5.get(Button.class, buttonNames[i]).setValue(1);
+
+     }
+     a.funcPads[0] = false;
+    
+    }
+   // if((i >= toggleNames.length) && cp5.get(Button.class, allNames[i]).isOn() && funcDebounce[i].isFinished()) cp5.get(Button.class, allNames[i]).setOff();
+    }
+  }
+  
+  void setEncMode(){
+    int currMode = arduino.rawEnc2Mode % encModes.length;
+    
+  if(arduino.enc2ModeFlg == true){
+   cp5.get(Textlabel.class,"seqEncMode").setText("Input Mode: " + encModes[currMode]);
+   arduino.enc2ModeFlg = false;
+  }
+   switch(currMode){
+     case 0:  //Column Select
+     
+     updateSeqRowIndex();
+     break;
+     
+     case 1:  //Synth Select
+     
+     
+     break;
+     
+     case 2:  //BPM
+     
+     updateBPM();
+     
+     cp5.get(Textlabel.class,"seqEncMode").setText("Input Mode: " + encModes[currMode] + ": " + bpm);
+     break;
+     
+     case 3:  //Random Prob
+     
+     //cp5.get(Textlabel.class, "RandomProb").show();
+     //setRandomProb(arduino);
+     break;
+     
+     case 4:  //BPM steps
+     //cp5.get(Textlabel.class, "RandomProb").hide();
+     updateBPMSteps();
+     cp5.get(Textlabel.class,"seqEncMode").setText("Input Mode: " + encModes[currMode] + ": " + bpm);
+     break;
+     
+     case 5:  //scale
+     //cp5.get(Textlabel.class, "RandomProb").show();
+     updateScale();
+     cp5.get(Textlabel.class,"seqEncMode").setText("Input Mode: " + encModes[currMode] + ": " + scales[scaleIndex]);
+     break;
+     
+     case 6:  //Tempo multiplier
+     //cp5.get(Textlabel.class, "RandomProb").show();
+     setSeqNoteDuration();
+     cp5.get(Textlabel.class,"seqEncMode").setText("Input Mode: " + encModes[currMode] + ": " + seqNoteDur);
+     break;
+     
+     default:
+     break;
+   }
+}
 }
