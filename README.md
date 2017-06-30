@@ -8,12 +8,12 @@ Repository for Supercollider powered Raspberry Pi programmable portable synthesi
 
 # How To Run in current state:
 <ol>
-<li>1) Download processing: <a href="www.processing.org">www.processing.org</a></li>
-<li>2) Download SuperCollider: <a href="http://supercollider.github.io/">http://supercollider.github.io/</a></li>
-<li>3) Download or Clone this repo and make sure you are on the note-expansion branch.</li>
-<li>4) Open SuperCollider and then open convolution/supercollider/SuppercolliderFinalFiles/BasicBootRequirements.scd.</li>
-<li>5) Follow the instructions in the comments to boot the server and load the required files.  The drum machine should begin playing an obnoxoius repetitive beat if it is working.</li>
-<li>6) Open Processing and open the ConvolutionInterface.pde file and run it.  </li>
+<li> Download processing: <a href="www.processing.org">www.processing.org</a></li>
+<li> Download SuperCollider: <a href="http://supercollider.github.io/">http://supercollider.github.io/</a></li>
+<li> Download or Clone this repo and make sure you are on the note-expansion branch.</li>
+<li> Open SuperCollider and then open convolution/supercollider/SuppercolliderFinalFiles/BasicBootRequirements.scd.</li>
+<li> Follow the instructions in the comments to boot the server and load the required files.  The drum machine should begin playing an obnoxoius repetitive beat if it is working.</li>
+<li> Open Processing and open the ConvolutionInterface.pde file and run it.  </li>
 </ol>
 <p>Once the matrix has played through once the drum machine should go silent.  Now you can turn on and off different instruments.  The up and down arrow allow you to switch instruments and then use the last two sliders to control amplitude and playback rate.  The others are not connected to controls on the synth server yet.  The left and right arrows allow you to change from drum machine to step sequencer to lead synth, though lead synth needs the physical interface to work.  Also, occasionally you cannot click on any buttons until you cycle through the modes at least once more.  </p>
 
