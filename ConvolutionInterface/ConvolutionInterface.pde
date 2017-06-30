@@ -148,6 +148,7 @@ void setup() {
   address = new NetAddress(HOST, PORT);
  // port = new Serial(this, Serial.list()[SERIAL_PORT], BAUD);
  if(System.getProperty("os.name").equals("Mac OS X")){
+   //change value to length-2 to use with mac without serial device attached
   port = new Serial(this, Serial.list()[Serial.list().length -1], BAUD);
  }else{
    port = new Serial(this, Serial.list()[Serial.list().length -2], BAUD);

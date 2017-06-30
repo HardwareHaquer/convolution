@@ -2,10 +2,10 @@
 
 static int pinA = 5; // Our first hardware interrupt pin is digital pin 2
 static int pinB = 6; // Our second hardware interrupt pin is digital pin 3
-
-const int enc1PinA = 5; // Our first hardware interrupt pin is digital pin 2
-const int enc1PinB = 6; // Our second hardware interrupt pin is digital pin 3
-const int enc1ButtPin = 9; // Our first hardware interrupt pin is digital pin 2
+//note this is 9,10,11 due to issue with 3rd prototype could be any 3 consecutive pins
+const int enc1PinA = 9;// 5; //9; // Our first hardware interrupt pin is digital pin 2
+const int enc1PinB = 10; //6; //10; // Our second hardware interrupt pin is digital pin 3
+const int enc1ButtPin = 11;//9; //11; // Our first hardware interrupt pin is digital pin 2
 const int enc1_ID = 0;
 
 static int enc2PinA = 22; // Our first hardware interrupt pin is digital pin 2
