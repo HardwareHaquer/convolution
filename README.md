@@ -9,7 +9,7 @@
 <p>The plan is to create an Image of the modified Raspbian OS and make that available for download so all of the headache of installing supercollider, setting up audio routing, turning off unneeded processes, etc. is done and people can copy the image to an SD card and start playing.</p> 
 
 # Setup for OSX and Windows:
-<ol>
+<p><ol>
 <li> Clone or download this repo and unzip.</li>
 <li> Download processing: <a href="www.processing.org">www.processing.org</a></li>
 <li> Open Processing and open the ConvolutionInterface.pde file.</li>
@@ -32,7 +32,7 @@
 <li> Download SuperCollider: <a href="http://supercollider.github.io/">http://supercollider.github.io/</a></li>
 <li> Open SuperCollider and then open convolution/supercollider/SuppercolliderFinalFiles/BasicBootRequirements.scd. (yes Suppercollider and not supercollider)</li>
 <li> Follow the instructions in the comments to boot the server and load the required files.  The drum machine should begin playing an obnoxoius repetitive beat if it is working.</li>
-<li> Open Processing and open the ConvolutionInterface.pde file and run it.  </li>
+<li> Open Processing and open the ConvolutionInterface.pde file and run it.  </li></p>
 
 <p>Once the matrix has played through once the drum machine should go silent.  Now you can turn on and off different instruments.  The up and down arrow allow you to switch instruments and then use the last two sliders to control amplitude and playback rate.  The others are not connected to controls on the synth server yet.  The left and right arrows allow you to change from drum machine to step sequencer to lead synth, though lead synth needs the physical interface to work.  Also, occasionally you cannot click on any buttons until you cycle through the modes at least once more.  </p>
 
