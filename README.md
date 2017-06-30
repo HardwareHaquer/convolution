@@ -13,18 +13,21 @@
 <li> Clone this repo or download and unzip.</li>
 <li> Download processing: <a href="www.processing.org">www.processing.org</a></li>
 <li> Open Processing and open the ConvolutionInterface.pde file.</li>
-<li> Currently if no usb serial device (arduino) is attached the interface will fail to open when run.  This can easily be solved by attaching an arduino to the usb port, or on OSX you can change one line of code to make it listen to the /dev/cu.Incoming-Bluetooth-Port as a dummy port by changing: <blockquote><code> if(System.getProperty("os.name").equals("Mac OS X")){
+<li> Currently if no usb serial device (arduino) is attached the interface will fail to open when run.  This can easily be solved by attaching an arduino to the usb port, or on OSX you can change one line of code to make it listen to the /dev/cu.Incoming-Bluetooth-Port as a dummy port by changing: 
+<pre>if(System.getProperty("os.name").equals("Mac OS X")){
    //change value to length-2 to use with mac without serial device attached
   port = new Serial(this, Serial.list()[Serial.list().length -1], BAUD);
  }else{
    port = new Serial(this, Serial.list()[Serial.list().length -2], BAUD);
- }
- </code> to <code> if(System.getProperty("os.name").equals("Mac OS X")){
+   }</pre>
+   to:
+   
+  <pre>if(System.getProperty("os.name").equals("Mac OS X")){
    //change value to length-2 to use with mac without serial device attached
-   port = new Serial(this, Serial.list()[Serial.list().length -<span style="color:red;">2</span>], BAUD);
+   port = new Serial(this, Serial.list()[Serial.list().length -<span style="bgcolor:red;">2</span>], BAUD);
  }else{
    port = new Serial(this, Serial.list()[Serial.list().length -2], BAUD);
-   }</code></blockquote>
+   }</pre>
 <li> Download SuperCollider: <a href="http://supercollider.github.io/">http://supercollider.github.io/</a></li>
 <li> Download or Clone this repo and make sure you are on the note-expansion branch.</li>
 <li> Open SuperCollider and then open convolution/supercollider/SuppercolliderFinalFiles/BasicBootRequirements.scd.</li>
