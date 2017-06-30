@@ -29,6 +29,8 @@ OscP5 osc;
 NetAddress address;
 HardwareInput arduino;
 
+
+
 void setup()
 {
   arduino = new HardwareInput(6,128,2,0);
@@ -59,6 +61,7 @@ void serialEvent(Serial port)
   //println();
   osc.send(msg, address);
   arduino.recordValues(vals);
+  
 }
 
 void oscEvent(OscMessage msg)
@@ -73,13 +76,15 @@ void oscEvent(OscMessage msg)
   port.write("\n");
 }
 
-
+//added two encoder inputs, updates, and getters not tested
 
 class HardwareInput{
   float[] knobs;
   int[] notes;
   float[] encoders;
   float mode;
+  int enc1Mode = 0;
+  int enc2Mode = 0;
   float[] lastEncode;
   float[] rawEncode = {0,0};
   
@@ -112,10 +117,18 @@ class HardwareInput{
    encoders = e;
  }
  
- void updateMode(float m){
-   mode = m;
+ void updateMode(int encNum, int m){
+   if(encNum==0)enc1Mode = m;
+   else if(encNum==1)enc2Mode = m;
+   else println("No encoder of that number!!");
+   println("1: " + enc1Mode + "  2: " + enc2Mode);
  }
  
+ int getMode(int encNum){
+   if(encNum==0) return enc1Mode;
+   else if(encNum==1)return enc2Mode;
+   else return -1;
+ }
  void recordValues(String[] v){
   
   if(v[0].equals("/encoder")){
@@ -124,7 +137,9 @@ class HardwareInput{
     for (int i = 1; i < v.length; i++){
       lastEncode[i-1] = encoders[i-1];
       encoders[i-1] = float(trim(v[i]));
-    }
+    //  lastEncode[1] = encoders[1];
+     // encoders[1] = float(trim(v[2]));
+  }
    if(lastEncode[0] < encoders[0]){
      int subLength;
    //  println("positive encoder change! turn off keys:" + (12*lastEncode[0]) + " to " + (12*lastEncode[0]+11) );
@@ -160,6 +175,12 @@ class HardwareInput{
    }
   }else if(v[0].equals("/knobs")){
     for (int i = 1; i < v.length; i++) knobs[i-1] = float(trim(v[i]));
+    
+  }else if(v[0].equals("/mode")){
+   if(int(trim(v[1])) == 0) enc1Mode = int(trim(v[2])); 
+   if(int(trim(v[1])) == 1) enc2Mode = int(trim(v[2]));
+   //println(v[0] + v[1] + v[2]);
+   
   }else if(v[0].equals("/noteOn")){
     notes[int(trim(v[2]))] = 1;
           //for(int i=0; i < notes.length; i++){
@@ -174,13 +195,11 @@ class HardwareInput{
           //  print(notes[i] + " ");
           //  if(i%12 == 0 ) println();
           //}
-    println();
-  }else if(v[0].equals("/mode")){
-    mode = float(trim(v[1]));
+          //println();
   }else if(v[0].equals("/rawEnc")){
     rawEncode[1] = rawEncode[0];
     rawEncode[0] = float(trim(v[1]));
-    //println(v[0] + ": " + int(trim(v[1])));
+        //println(v[0] + ": " + int(trim(v[1])));
   }
   
 }

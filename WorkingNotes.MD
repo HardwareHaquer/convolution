@@ -7,7 +7,7 @@ Currently, they are just a place to paste configuration settings.
 
 Massive XRuns cause supercollider server to crash/quit after about 1 minute without these settings:
 
-`jackd -r48000 -P70 -dalsa -dhw:1 -p128 -n3 -s`
+`jackd -P70 -d alsa -dhw:1 -p 128 -n 3 -r 48000 -s`
 
 Values may change as I tweak to the best possible settings.
 

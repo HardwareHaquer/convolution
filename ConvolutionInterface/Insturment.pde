@@ -8,6 +8,11 @@ class Instrument{
  float effect1, effect2;
  boolean visible = false;
  int[] steps;
+ float[] sliderValues = {0.1,0.5,0.3,0.2,0.6,1.0};
+ float[] envArray;
+ FloatList envPoints;
+ boolean lock = false;
+// int root = 60;
  //EnvShaper env;
  
  
@@ -18,119 +23,81 @@ class Instrument{
    release =0.2;
    theName = _theName;
    id = _id;
+   initEnvPoints();
    
    
-   Group g1 = cp5.addGroup(theName)
-                 .setPosition(10,10)
-                 .setBackgroundHeight(250)
-                 .setSize(400,250)
-                 .setBackgroundColor(0xff1111ff)
-                 ;
-   
-   cp5.addSlider( "attack" )
-       .setRange( 0.0, 5.0 )
-       .plugTo( this, "setAtk" )
-       .setValue( atk )
-       .setLabel("attack")
-       .setPosition(10,10)
-       .setSize(50, 180)
-       .setGroup(g1)
-       ;
-       
-     cp5.addSlider( "decay" )
-       .setRange( 0.01, 5.0 )
-       .plugTo( this, "setDcy" )
-       .setValue( decay )
-       .setLabel("Decay")
-       .setPosition(70,10)
-       .setSize(50, 180)
-       .setGroup(g1)
-       ;
-       
-  cp5.addSlider( "sustain" )
-       .setRange( 0.01, 5.0 )
-       .plugTo( this, "setSus" )
-       .setValue( sustain )
-       .setLabel("Sustain")
-       .setPosition(130,10)
-       .setSize(50, 180)
-       .setGroup(g1)
-       ;
-       
- cp5.addSlider( "release" )
-       .setRange( 0.01, 5.0 )
-       .plugTo( this, "setRel" )
-       .setValue( release )
-       .setLabel("Release")
-       .setPosition(190,10)
-       .setSize(50, 180)
-       .setGroup(g1)
-       ;
-       
-  cp5.addSlider( "effect1" )
-       .setRange( 0.0, 100.0 )
-       .plugTo( this, "setEffect1" )
-       .setValue( effect1 )
-       .setLabel("Effect1")
-       .setPosition(250,10)
-       .setSize(50, 180)
-       .setGroup(g1)
-       ;
-       
-  cp5.addSlider( "effect2" )
-       .setRange( 0.0, 100.0 )
-       .plugTo( this, "setEffect2" )
-       .setValue( effect2 )
-       .setLabel("Effect2")
-       .setPosition(310,10)
-       .setSize(50, 180)
-       .setGroup(g1)
-       ;
-  cp5.getController("attack").getValueLabel().alignX(ControlP5.CENTER);
-  cp5.getController("decay").getValueLabel().alignX(ControlP5.CENTER);
-  cp5.getController("sustain").getValueLabel().alignX(ControlP5.CENTER);
-  cp5.getController("release").getValueLabel().alignX(ControlP5.CENTER);
-  cp5.getController("effect1").getValueLabel().alignX(ControlP5.CENTER);
        
  }
   
-  void setVisible(boolean v){
-    //do something
-    
-  }
-  
+ 
   void record(){
   }
-  
+// update slider values (currently atk decay etc, but should be mapped to other features as envelope is better for these)  
   void setAtk(float v){
-   atk = v;
-   println(theName + ": attack: " + atk);
+   //atk = v;
+   if(lock != true)sliderValues[0] = v;
+  // println(theName + ": attack: " + sliderValues[0]);
   }
   
   void setDcy(float v){
    decay = log(v)*10;
-   println(theName + ": decay: " + decay);
+   if(lock != true) sliderValues[1] = v; //log(v)*10;
+  // println(theName + ": decay: " + sliderValues[1]);
   }
   
   void setSus(float v){
     sustain = v;
-    println(theName + ": sustain: " + sustain);  
+    if(lock != true) sliderValues[2] = v;
+   // println(theName + ": sustain: " + sliderValues[2]);  
   }
   
    void setRel(float v){
     release = v;
-    println(theName + ": release: " + release);  
+    if(lock != true) sliderValues[3] = v;
+   // println(theName + ": release: " + sliderValues[3]);  
   }
   
   void setEffect1(float v){
     effect1 = v;
-    println(theName + ": effect1: " + effect1);  
+    if(lock != true) sliderValues[4] = v;
+  //  println(theName + ": effect1: " + sliderValues[4]);  
   }
   
   void setEffect2(float v){
     effect2 = v;
-    println(theName + ": effect2: " + effect2);  
+    if(lock != true) sliderValues[5] = v;
+   // println(theName + ": effect2: " + sliderValues[5]);  
   }
-  
+//initialize default envelop settings 
+  void initEnvPoints(){
+     envPoints = new FloatList();
+     envPoints.append(0.0); //start length
+     envPoints.append(0.0); //start amp
+     
+     envPoints.append(1.0);//Attack
+     envPoints.append(1.0);
+     envPoints.append(2.0);//decay
+     envPoints.append(0.5);
+     envPoints.append(3.0);//sustain
+     envPoints.append(0.3);
+     envPoints.append(4.0); //release
+     envPoints.append(0.0);
+     //envPoints.set(i, map(vertices[i/2].x, x, w+x, 0, tSecs));
+     //envPoints.set(i+1, map(vertices[i/2].y, h+y, y, 0,1));
+    
+    //save_State(envPoints);
+    }
+   //void sendSliderOsc(){
    
+   //   OscMessage mMessage = new OscMessage("/kStates" );
+   //   mMessage.add("/test");
+   //   for(int i=0; i < sliderValues.length; i++) mMessage.add(sliderValues[i]);
+      
+   // osc.send(mMessage, address);
+   
+   // //println(mMessage);
+   //}
+    
+ 
+
 }

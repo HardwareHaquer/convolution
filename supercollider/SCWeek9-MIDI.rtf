@@ -1,0 +1,133 @@
+{\rtf1\mac\ansicpg10000\cocoartf102
+{\fonttbl\f0\fnil\fcharset77 Monaco;}
+{\colortbl;\red255\green255\blue255;\red191\green0\blue0;\red0\green0\blue0;\red0\green0\blue191;
+\red96\green96\blue96;}
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural
+
+\f0\fs40 \cf2 // MIDI In and Out\cf3 \
+\cf2 //\cf3 \
+\cf2 // You need to start by initialising your MIDI devices so \cf3 \
+\cf2 // SuperCollider knows how many input and output ports to \cf3 \
+\cf2 // expect. This is done using the MIDIClient object. You\cf3 \
+\cf2 // specify the number of inports and outputs:\cf3 \
+\
+\cf4 MIDIClient\cf3 .init(inports, outports);\
+\
+\cf2 // Once this is done, you can set up a connection between \cf3 \
+\cf2 // your MIDI device and SuperCollider. To do this, you use \cf3 \
+\cf2 // the .connect method on the MIDIIn Ugen. You are essentially\cf3 \
+\cf2 // mapping a SuperCollider inport to a physical inport on your\cf3 \
+\cf2 // device. You need to specify the SuperCollider inport and the\cf3 \
+\cf2 // reference to the physical inport you are using.\cf3 \
+\
+\cf4 MIDIIn\cf3 .connect(0, \cf4 MIDIClient\cf3 .sources.at(0));\
+\
+\cf2 // This will connect the first physical port on your device\cf3 \
+\cf2 // (MIDIClient.sources.at(0)) to the first SuperCollider inport.\cf3 \
+\cf2 // If you have a device with multiple in and out ports, then this\cf3 \
+\cf2 // simple script will sort out the mapping for you, just change\cf3 \
+\cf2 // the inports and outports value:\cf3 \
+\
+(\
+\cf4 var\cf3  inports, outports;\
+inports = 4;\
+outports = 4;\
+\cf4 MIDIClient\cf3 .init(inports, outports);\
+inports.do(\{ \cf4 arg\cf3  i;\
+	\cf4 MIDIIn\cf3 .connect(i, \cf4 MIDIClient\cf3 .sources.at(i));\
+\});\
+)\
+\
+\cf2 // Once this is done, you can access any MIDI data sent to these \cf3 \
+\cf2 // ports. There are a number of methods which you can use in\cf3 \
+\cf2 // conjunction with the MIDIIn ugen to access the different types\cf3 \
+\cf2 // of MIDI data. Here are some of the most common:\cf3 \
+\cf2 //\cf3 \
+\cf2 // MIDIIn.noteOn processes MIDI note on messages. It returns the\cf3 \
+\cf2 // source, MIDI channel, note number and velocity.\cf3 \
+\cf2 //\cf3 \
+\cf2 // MIDIIn.noteOff does the same, but for note off messages.\cf3 \
+\cf2 //\cf3 \
+\cf2 // MIDIIn.control processes MIDI controller data. It returns the\cf3 \
+\cf2 // source, MIDI channel, controller number and controller value.\cf3 \
+\cf2 //\cf3 \
+\cf2 // MIDIIn.bend processes MIDI pitch bend data. It returns the source,\cf3 \
+\cf2 // MIDI channel and the bend value.\cf3 \
+\cf2 //\cf3 \
+\cf2 // MIDIIn.touch processes MIDI channel aftertouch data. It returns\cf3 \
+\cf2 // the source, MIDI channel and pressure value.\cf3 \
+\cf2 //\cf3 \
+\cf2 // MIDIIn.polytouch processes MIDI polyphonic aftertouch data. It\cf3 \
+\cf2 // returns the source, MIDI channel, note number and pressure value.\cf3 \
+\cf2 //\cf3 \
+\cf2 // Check the MIDIIn helpfile and class definition for more methods.\cf3 \
+\cf2 //\cf3 \
+\cf2 // For each method, you set an action to perform when it receives \cf3 \
+\cf2 // this particular type of information. Here is an example of using\cf3 \
+\cf2 // MIDI note on data to trigger notes and determine their pitch:\cf3 \
+\
+\cf4 SynthDef\cf3 (\cf5 "midinotes"\cf3 , \{ \cf4 arg\cf3  pitch=440, trig=0;\
+\cf4 var\cf3  sound, env;\
+sound = \cf4 SinOsc\cf3 .ar(pitch);\
+env = \cf4 EnvGen\cf3 .ar(\cf4 Env\cf3 .adsr, trig);\
+\cf4 Out\cf3 .ar(0, sound*env); \
+\}).writeDefFile;\
+s.sendSynthDef(\cf5 "midinotes"\cf3 );\
+\
+x = \cf4 Synth\cf3 (\cf5 "midinotes"\cf3 );\
+\
+\cf4 MIDIIn\cf3 .noteOn = \{ \cf4 arg\cf3  src, chan, num, vel;\
+	x.set(\cf5 "pitch"\cf3 , num.midicps);\
+	x.set(\cf5 "trig"\cf3 , vel/128);\
+\};\
+\cf4 MIDIIn\cf3 .noteOff = \{ \cf4 arg\cf3  src, chan, num, vel;\
+	x.set(\cf5 "trig"\cf3 , 0);\
+\};\
+\
+x.free;\
+\
+\cf2 // Here is the same example, but this time we are using a midi\cf3 \
+\cf2 // slider to scale the volume of the notes.\cf3 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural
+\cf4 SynthDef\cf3 (\cf5 "midinotes"\cf3 , \{ \cf4 arg\cf3  pitch=440, trig=0, vol=0;\
+\cf4 var\cf3  sound, env;\
+sound = \cf4 SinOsc\cf3 .ar(pitch);\
+env = \cf4 EnvGen\cf3 .ar(\cf4 Env\cf3 .adsr, trig, vol);\
+\cf4 Out\cf3 .ar(0, sound*env); \
+\}).writeDefFile;\
+s.sendSynthDef(\cf5 "midinotes"\cf3 );\
+\
+x = \cf4 Synth\cf3 (\cf5 "midinotes"\cf3 );\
+\
+\cf4 MIDIIn\cf3 .noteOn = \{ \cf4 arg\cf3  src, chan, num, vel;\
+	x.set(\cf5 "pitch"\cf3 , num.midicps);\
+	x.set(\cf5 "trig"\cf3 , vel/128);\
+\};\
+\cf4 MIDIIn\cf3 .noteOff = \{ \cf4 arg\cf3  src, chan, num, vel;\
+	x.set(\cf5 "trig"\cf3 , 0);\
+\};\
+\
+\cf4 MIDIIn\cf3 .control = \{ \cf4 arg\cf3  src, chan, num, val;\
+	x.set(\cf5 "vol"\cf3 , val/128);\
+\};\
+\
+x.free;\
+\
+\cf2 // Easy!\cf3 \
+\cf2 //\cf3 \
+\cf2 // If you have multiple devices or controllers or want different \cf3 \
+\cf2 // actions to be performed depending on what note or velocity is \cf3 \
+\cf2 // generated, then just use a collection of if statements in your\cf3 \
+\cf2 // method action. Eg:\cf3 \
+\
+\cf4 MIDIIn\cf3 .control = \{ \cf4 arg\cf3  src, chan, num, val;\
+	if ( chan == 1 && num = 1, \{ action1 \});\
+	if ( chan == 1 && num = 2, \{ action2 \});\
+	if ( chan == 2 && num = 1, \{ action3 \});\
+	....\
+	....\
+	etc.\
+\};\
+\
+}
