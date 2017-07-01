@@ -11,7 +11,7 @@ s.boot;
 /* Setp 2: execute this block of code.  This loads the three required .scd files */
 (
 //note currently need to load testsAndStops.scd by hand first
-var files = #["SynthDefs.scd", "DrumMachine.scd", "OSCdefsTempoBuffer_test.scd"];
+var files = #["SynthDefs_test.scd", "DrumMachine.scd", "OSCdefsTempoBuffer_test.scd", "LeadSynthFinal.scd"];
 Server.default.waitForBoot {
         var dir = thisProcess.nowExecutingPath.dirname;
 	files.do { |f| (dir +/+ f).load; s.sync; };
@@ -34,3 +34,4 @@ s.quit;
 x = {SinOsc.ar(440)}.play
 x=Synth(\help_sinegrain, [\amp, 1.0]);
 x.free;
+thisProcess.nowExecutingPath.dirname;

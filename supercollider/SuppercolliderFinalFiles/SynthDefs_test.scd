@@ -1,7 +1,7 @@
 //Synth def examples for Convolution
 
 //just for testing
-(
+/*(
 // send a synth def to server
 SynthDef("tpulse", { arg out = 0,freq = 700, sawFreq = 440.0;
     Out.ar(out, SyncSaw.ar(freq, sawFreq, 0.1));
@@ -24,7 +24,7 @@ x.free;
 x = Synth(~synths[1],[\freq, 440]);
 s.plotTree;
 x=Synth("default");
-x.free;
+x.free;*/
 (
 SynthDef(\beeu, { |freq = 1000|
 	var sig, env;
@@ -157,8 +157,7 @@ SynthDef(\ay1, { | freqa=440, freqb=550, freqc=660, vola=7, volb=15, volc=10, ch
     Out.ar(out, ay);
 }).add;
 )
-SynthDescLib.
-SynthDef.synthDefDir.postln;
+
 
 // x =Synth(\funSynth, [pitch:50.rrand(600)]);
 // x =Synth(\beeu, [freq:50.rrand(6000)]);
