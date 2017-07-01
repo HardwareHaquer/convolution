@@ -1,5 +1,5 @@
 (
-
+//remove all of the damn postlns!
 var notes, on, off;
 ~srcGroup = Group.new;
 ~fxGroup = Group.after(~srcGroup);
