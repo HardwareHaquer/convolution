@@ -188,7 +188,9 @@ class HardwareInput{
    //println(v[0] + v[1] + v[2]);
    }else if(v[0].equals("/keyOn")){
     int note = int(trim(v[1]));
+
     if (theMode == SEQUENCER || theMode == DRUM_MACHINE){
+
      // println("note on: " + note + " | oct: " + encPos + " | note%enc: " + ((note-encPos*12)+(16*(encPos%2))));
       
       lastPads[note] = pads[note];
