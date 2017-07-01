@@ -47,6 +47,7 @@ ControlP5 cp5;
 StepSequencer musicMaker;
 
 Instrument bass;
+Instrument lead;
 Instrument[] insts;
 EffectsGroup efg;
 
@@ -281,6 +282,7 @@ void setup() {
   instDsplyTime = new Timer(2000);
 
   bass = new Instrument("bass", 0);
+  lead = new Instrument("lead", -1);
   insts = new Instrument[instNames.length];
   for(int i=0; i < instNames.length; i++){
     insts[i] = new Instrument(instNames[i], i);
@@ -520,6 +522,15 @@ void plugSliders(int active, int last){
   }
 }
 
+void plugLeadSliders(int last){
+  unPlugSliders(last);
+  for(int i=0; i < sliderNames.length; i++){
+  cp5.getController(sliderNames[i]).setValue(lead.sliderValues[i]); //.setSliderValue(insts[active], funcs[i]);
+  cp5.getController(sliderNames[i]).plugTo(lead, funcs[i]);
+  }
+}
+  
+
 void unPlugSliders(int last){
   for(int i=0; i < sliderNames.length; i++){
   cp5.getController(sliderNames[i]).unplugFrom(insts[last]);
@@ -527,7 +538,7 @@ void unPlugSliders(int last){
 }
 
 void setupInstSliders(){
-  float[][] sliderRanges  = {{0.001, 5.0}, {0.01, 5.0},{0.01, 5.0},{0.01, 5.0}, {0.0, 1.0},{0.1, 10.0}};              
+  float[][] sliderRanges  = {{0.001, 1.0}, {0.01, 1.0},{0.01, 1.0},{0.01, 1.0}, {0.0, 1.0},{0.1, 10.0}};              
   int slideWidth = 60;
   int slideHeight = 160;
   int slideGap = 10;
@@ -721,8 +732,8 @@ cp5.addTextlabel("instName")
   plugSliders(listIndex, 0);
 }
 
-void setGlobalEffects(float[] input, String[] sliders ){ //add flag for lock
-if(!insts[listIndex].lock){
+void setGlobalEffects(float[] input, String[] sliders, Instrument zz ){ //add flag for lock
+if(!zz.lock){
   for(int i = 0; i < input.length; i++){
     float min = cp5.getController(sliders[i]).getMin();
     float max = cp5.getController(sliders[i]).getMax();

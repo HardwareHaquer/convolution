@@ -29,10 +29,11 @@ void leadMode(){
     fill(255,0,255);
     shiftRoot();
     updateScale();
+    
     if(arduino.encoders[0] != arduino.lastEncode[0]){
       updateRootText();
       sendRoot();
-      cp5.get(Textlabel.class, "root").show();
+      
     }
     cp5.getController("label").setVisible(false);
     musicMaker.setVisibility(false);
@@ -40,13 +41,25 @@ void leadMode(){
     cp5.getController("seq").hide();
     cp5.get(Textlabel.class, "bpm").hide();
     cp5.get(Textlabel.class, "current").hide();
-    cp5.get(Group.class, "Effects Controls").hide();
-    cp5.get(Group.class, "Global Controls").show();
+    plugLeadSliders(listIndex);
+    lead.lock=false;
+    cp5.get(Group.class, "Effects Controls").show();
+    cp5.get(Group.class, "Global Controls").hide();
+    cp5.get(Textlabel.class, "root").show();
      sup.updateEnvPoints();
      sup.disp();
     if(arduino.knobFlag){
-      setGlobalEffects(arduino.smoothKnobs(), globalSliders);
+      setGlobalEffects(arduino.smoothKnobs(), sliderNames, lead);
       arduino.knobFlag  = false;
+     }
+     if(arduino.enc1ChangeFlag){
+       arduino.enc1ChangeFlag = false;
+       if ( arduino.rawEnc1[0] < arduino.rawEnc1[1]) lead.coreNote++;
+       else if ( arduino.rawEnc1[0] > arduino.rawEnc1[1]) lead.coreNote--;
+       if (lead.coreNote > 100) lead.coreNote = 100;
+       else if (lead.coreNote < 1) lead.coreNote =1;
+       lead.sendCoreNote();
+       //println(lead.coreNote);
      }
   
 }
@@ -82,7 +95,7 @@ void dmMode(){
    sup.updateEnvPoints();
  // sup.disp();
   if(arduino.knobFlag){
-    setGlobalEffects(arduino.smoothKnobs(), sliderNames);
+    setGlobalEffects(arduino.smoothKnobs(), sliderNames, insts[listIndex]);
     
     arduino.knobFlag  = false;
   }

@@ -12,6 +12,7 @@ class Instrument{
  float[] envArray;
  FloatList envPoints;
  boolean lock = false;
+ int coreNote = 57;
 // int root = 60;
  //EnvShaper env;
  
@@ -87,16 +88,14 @@ class Instrument{
     
     //save_State(envPoints);
     }
-   //void sendSliderOsc(){
+   void sendCoreNote(){
+       println(coreNote);
+      OscMessage mMessage = new OscMessage("/core" );
+      mMessage.add(coreNote);
+    osc.send(mMessage, address);
    
-   //   OscMessage mMessage = new OscMessage("/kStates" );
-   //   mMessage.add("/test");
-   //   for(int i=0; i < sliderValues.length; i++) mMessage.add(sliderValues[i]);
-      
-   // osc.send(mMessage, address);
-   
-   // //println(mMessage);
-   //}
+    println(mMessage);
+   }
     
  
 

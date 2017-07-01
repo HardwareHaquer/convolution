@@ -8,6 +8,9 @@ void oscEvent(OscMessage msg)
     //outMsg.add(insts[listIndex].sliderValues);
     //printArray(outMsg.arguments());
   }
+  if(msg.addrPattern().equals("/core")){
+   println( msg.arguments()[0]);
+  }
  // println(msg.arguments()[0]);
   if(cnt%seq.numSteps == 0) seq.sendMatrixOsc();
    if(cnt%musicMaker.xSteps == musicMaker.xSteps - 1) musicMaker.sendMatrixOsc();

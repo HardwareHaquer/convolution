@@ -22,12 +22,12 @@ on = OSCdef(\testNoteOn, { |msg|
 	oct = (~noteOn[1] / ~scale.degrees.size).trunc;
 	index = ~noteOn[1] %  ~scale.degrees.size;
 	freq = ~scale.degreeToFreq(index, ~coreNote.midicps, 1+oct);
-	~noteOn[1].post;
+	/*~noteOn[1].post;
 	"<==noteOn oct==>".post;
 	oct.postln;
 	~scale.degrees[index].postln;
 	freq.postln;
-	"=============".postln;
+	"=============".postln;*/
 
 	notes[~noteOn[1]] = Synth(\am1,[\freq, freq, \out, 0], ~srcGroup);
 
@@ -64,15 +64,19 @@ OSCdef(\scale, { |msg|
 
 }, "/scale");
 
+OSCdef(\sendCoreNote, {|msg|
+	msg[1].postln;
+}, "/core");
+
 q = { on.free; off.free};
 
 
 
 
 
-SynthDef("oscnotes", { arg out, pitch=440, trig=0, pitchMod =0, amp = 0.5, atk=0.01, releaseTime=1;
+SynthDef("oscnotes", { arg out =0, freq=440, trig=0, pitchMod =0, amp = 0.5, atk=0.01, releaseTime=1;
 var sound, env;
-sound = SinOsc.ar(pitch+pitchMod);
+sound = SinOsc.ar(freq+pitchMod);
 	env = EnvGen.ar(Env.adsr(releaseTime: releaseTime), trig, doneAction: 2);
 Out.ar(out, sound*env*amp);
 }).add;
