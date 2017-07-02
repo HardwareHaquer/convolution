@@ -42,6 +42,8 @@ void leadMode(){
     cp5.get(Textlabel.class, "bpm").hide();
     cp5.get(Textlabel.class, "current").hide();
     plugLeadSliders(listIndex);
+    float[][] tempVals = {{0.001, 1.0}, {0.01, 30.0},{0.01, 1.0},{0.05, 5.0}, {0.0, 1.0},{0.1, 10.0}};
+    lead.setSliderRanges(tempVals);
     lead.lock=false;
     cp5.get(Group.class, "Effects Controls").show();
     cp5.get(Group.class, "Global Controls").hide();
@@ -50,17 +52,21 @@ void leadMode(){
      sup.disp();
     if(arduino.knobFlag){
       setGlobalEffects(arduino.smoothKnobs(), sliderNames, lead);
+      lead.sendSliders();
       arduino.knobFlag  = false;
+      
      }
      if(arduino.enc1ChangeFlag){
        arduino.enc1ChangeFlag = false;
        if ( arduino.rawEnc1[0] < arduino.rawEnc1[1]) lead.coreNote++;
        else if ( arduino.rawEnc1[0] > arduino.rawEnc1[1]) lead.coreNote--;
-       if (lead.coreNote > 100) lead.coreNote = 100;
-       else if (lead.coreNote < 1) lead.coreNote =1;
+       if (lead.coreNote > 104) lead.coreNote = 104;
+       else if (lead.coreNote < 12) lead.coreNote =12;
        lead.sendCoreNote();
        //println(lead.coreNote);
+       updateRootText();
      }
+     
   
 }
 
@@ -95,6 +101,7 @@ void dmMode(){
    sup.updateEnvPoints();
  // sup.disp();
   if(arduino.knobFlag){
+    insts[listIndex].setSliderRanges(insts[listIndex].sliderRanges);
     setGlobalEffects(arduino.smoothKnobs(), sliderNames, insts[listIndex]);
     
     arduino.knobFlag  = false;
@@ -103,6 +110,7 @@ void dmMode(){
 //double used  = (double)((Runtime.getRuntime().totalMemory()/1024 - Runtime.getRuntime().freeMemory()/1024)/1024);
 //println("total: " + total + " Used: " + used); 
   seq.drawExtras();
+  sendSlide();
   //setBPM();
   
 }

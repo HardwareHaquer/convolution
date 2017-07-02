@@ -260,7 +260,7 @@ void setRandomProb(HardwareInput a){
      }else{
        //button code here fuck
        cp5.get(Button.class, allNames[i]).setValue(1);
-       println("we tried");
+      
      }
      a.funcPads[0] = false;
     

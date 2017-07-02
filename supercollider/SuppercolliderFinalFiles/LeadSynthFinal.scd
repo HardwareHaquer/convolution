@@ -12,13 +12,14 @@ var notes, on, off;
 ~knobs;
 ~root;
 ~degree;
+~leadKnobs;
 ~scale = Scale.major;
 ~root = 0;
 notes = Array.newClear(128);
 on = OSCdef(\testNoteOn, { |msg|
 	var frqa, frqb, frqc, steps, padNum, index, oct, freq;
 	~noteOn = msg;
-	(~noteOn[1] / ~scale.degrees.size).postln;
+	//(~noteOn[1] / ~scale.degrees.size).postln;
 	oct = (~noteOn[1] / ~scale.degrees.size).trunc;
 	index = ~noteOn[1] %  ~scale.degrees.size;
 	freq = ~scale.degreeToFreq(index, ~coreNote.midicps, 1+oct);
@@ -29,7 +30,7 @@ on = OSCdef(\testNoteOn, { |msg|
 	freq.postln;
 	"=============".postln;*/
 
-	notes[~noteOn[1]] = Synth(\am1,[\freq, freq, \out, 0], ~srcGroup);
+	notes[~noteOn[1]] = Synth(\am1,[\freq, freq, \modFreq, ~leadKnobs[1], \att, ~leadKnobs[0], \rel, ~leadKnobs[3], \amp, ~leadKnobs[4], \gate, 1, \out, 0], ~srcGroup);
 
 }, "/keyOn");
 
@@ -37,6 +38,7 @@ off = OSCdef(\testNoteOff, { |msg|
 	~noteOff = msg;
 	//~noteOff.postln;
 	notes[~noteOff[1]].set(\trig, 0);
+	notes[~noteOff[1]].set(\gate, 0);
 	notes[~noteOff[1]].release;
 	//x.set("trig", 0);
 
@@ -46,13 +48,13 @@ off = OSCdef(\testNoteOff, { |msg|
 OSCdef(\encoder, { |msg|
 	//~root = msg[1]-4;
 	//if(msg[1] != ~oldmsg,{(msg[1].clip(0,120)).postln});// {(msg[1].min(8)-3).postln});
-	if(msg[1] < ~oldmsg,
+	/*if(msg[1] < ~oldmsg,
 		{~coreNote= ~coreNote - 1; ~coreNote.postln;},
 		{if(msg[1] > ~oldmsg,
 			{~coreNote = ~coreNote + 1; ~coreNote.postln;})});
 	~oldmsg = msg[1];
 	//~coreNote.postln;
-	~coreNote = ~coreNote.clip(1, 99);
+	~coreNote = ~coreNote.clip(1, 99);*/
 
 }, "/rawEnc");
 
@@ -60,17 +62,21 @@ OSCdef(\scale, { |msg|
 	~scale = Scale.at(Scale.names[msg[1]]);
 	if(msg[1] != ~oldmsg, {msg[1].postln});
 	~oldmsg = msg[1];
-	~scale.name.postln;
+	//~scale.name.postln;
 
 }, "/scale");
 
-OSCdef(\sendCoreNote, {|msg|
-	msg[1].postln;
+OSCdef(\getCoreNote, {|msg|
+	~coreNote = msg[1];
+	//~coreNote.postln;
 }, "/core");
 
 q = { on.free; off.free};
 
-
+OSCdef(\getLeadKnobs, {|msg|
+	~leadKnobs = msg[2..7];
+	//~leadKnobs.postln;
+}, "/leadKnobs");
 
 
 
@@ -85,15 +91,16 @@ Out.ar(out, sound*env*amp);
 
 
 
-SynthDef("am1", {arg freq = 200, modfreq = 5, amp = 0.4, att = 0.01, rel = 3, out;
-    var carrier, modulator, env;
+SynthDef("am1", {arg freq = 200, modfreq = 5, amp = 0.4, att = 0.01, rel = 3, gate=0, out;
+    var carrier, modulator, env ,gen;
     env = Env.perc(
         attackTime: att,
         releaseTime: rel,
         level: amp
-    ).kr(2);
+    );//.kr(2);
+	gen = EnvGen.kr(env, gate, doneAction: 2);
     modulator = SinOsc.ar(modfreq).range(0, 1);
-    carrier = SinOsc.ar(freq: freq, mul: env * modulator);
+    carrier = SinOsc.ar(freq: freq, mul: gen * modulator);
     Out.ar(out, carrier ! 2);
 }).add;
 )

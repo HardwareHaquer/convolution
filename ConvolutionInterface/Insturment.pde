@@ -8,11 +8,13 @@ class Instrument{
  float effect1, effect2;
  boolean visible = false;
  int[] steps;
+ float[][] sliderRanges  = {{0.001, 1.0}, {0.01, 1.0},{0.01, 1.0},{0.05, 5.0}, {0.0, 1.0},{0.1, 10.0}}; //default
  float[] sliderValues = {0.1,0.5,0.3,0.2,0.6,1.0};
  float[] envArray;
  FloatList envPoints;
  boolean lock = false;
  int coreNote = 57;
+// Timer sliderRate;
 // int root = 60;
  //EnvShaper env;
  
@@ -25,6 +27,7 @@ class Instrument{
    theName = _theName;
    id = _id;
    initEnvPoints();
+   //sliderRate = new Timer(30);
    
    
        
@@ -89,14 +92,29 @@ class Instrument{
     //save_State(envPoints);
     }
    void sendCoreNote(){
-       println(coreNote);
+       
       OscMessage mMessage = new OscMessage("/core" );
       mMessage.add(coreNote);
     osc.send(mMessage, address);
    
-    println(mMessage);
-   }
     
- 
+   }
+   void sendSliders(){
+    // if(sliderRate.isFinished()){
+      OscMessage outMsg = new OscMessage("/leadKnobs");
+      outMsg.add(id);
+      outMsg.add(sliderValues);
+      osc.send(outMsg, address);
+    // }
+   }
+   
+   void setSliderRanges(float[][] slides){
+     sliderRanges = slides;
+     for( int i =0; i < sliderNames.length; i++){
+     ((Slider)cp5.getController(sliderNames[i])).setRange( sliderRanges[i][0], sliderRanges[i][1] );
+     cp5.getController(sliderNames[i]).getValueLabel().alignX(ControlP5.CENTER);
+   }
+     
+   }
 
 }

@@ -328,7 +328,7 @@ void draw() {
     fill(255,0,255);
   }
   //updateInsturment();
-  sendSlide();
+  
 }
 
 void Clear_Matrix(){
@@ -350,7 +350,7 @@ void Mute_All(boolean state){
   seq.mute = state;
 }
 void updateRootText(){
-   cp5.get(Textlabel.class,"root").setText("Scale Root: " + noteNames[root%12] + (int)arduino.encoders[0]);
+   cp5.get(Textlabel.class,"root").setText("Root Note: " + noteNames[lead.coreNote%12] + lead.coreNote/12);// + "M: " + lead.coreNote);
    
 }
 void updateInputMode(){
@@ -538,7 +538,7 @@ void unPlugSliders(int last){
 }
 
 void setupInstSliders(){
-  float[][] sliderRanges  = {{0.001, 1.0}, {0.01, 1.0},{0.01, 1.0},{0.01, 1.0}, {0.0, 1.0},{0.1, 10.0}};              
+  float[][] sliderRanges  = {{0.001, 1.0}, {0.01, 1.0},{0.01, 1.0},{0.05, 5.0}, {0.0, 1.0},{0.1, 10.0}};              
   int slideWidth = 60;
   int slideHeight = 160;
   int slideGap = 10;
