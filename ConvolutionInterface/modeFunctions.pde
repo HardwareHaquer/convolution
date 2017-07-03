@@ -23,6 +23,17 @@ void seqMode(){
     cp5.get(Group.class, "Global Controls").hide();
     cp5.get(Textlabel.class, "root").hide();
     
+    if(arduino.enc1ChangeFlag){
+       arduino.enc1ChangeFlag = false;
+       println(musicMaker.encModes[arduino.rawEnc2Mode % musicMaker.encModes.length]);
+       if(musicMaker.encModes[arduino.rawEnc2Mode % musicMaker.encModes.length].equals("Root Note")){
+        
+        
+        // updateRootText();
+       }
+        println(lead.coreNote);
+     }
+    
 }
 
 void leadMode(){

@@ -18,6 +18,7 @@ Scale.names.postln;
 ~scale = Scale.minor;
 ~rootNote = 0;
 //change below to just be zero.
+~fullSeqPatt = PatternProxy(Pn(Pseries(0, 2, 12), inf));
 ~rootNotesDegrees = PatternProxy(Pn(Pseries(0, 2, 12), inf));
 ~stepSeqDegrees = PatternProxy(Pn(Pseries(0, 2, 12), inf));
 ~bassDegrees = PatternProxy(Pn(Pseries(0, 2, 12), inf));
@@ -115,8 +116,7 @@ OSCdef(\getSeqAmp, {|msg|                /*GetBPM listens for BPM message from P
 	temp = msg[1];
 	~seqAmp.source =(Pseq([1.0], inf));
 	~testSeqAmp = msg[1];
-	//msg.postln;
-	//~seqAmp.source.postln;
+
 }, "/volume");
 
 OSCdef(\getTempoMult, {|msg|                /*GetBPM listens for BPM message from Processing*/
@@ -125,24 +125,18 @@ OSCdef(\getTempoMult, {|msg|                /*GetBPM listens for BPM message fro
 	~mult = msg[1];
 	t.tempo = ~mainTempo;
 	x.tempo = t.tempo*~mult;
-	//~seqAmp.source =(Pseq([1.0], inf));
-	//~testSeqAmp = msg[1];
-	~mult.postln;
-	//~seqAmp.source.postln;
+
 }, "/seqMult");
 
 OSCdef(\getSlideMode, {|msg|                /*GetBPM listens for BPM message from Processing*/
 	   var temp;
 	temp = msg[1];
 	~seqLegato = msg[1];
-	//~seqAmp.source =(Pseq([1.0], inf));
-	//~testSeqAmp = msg[1];
-	//msg.postln;
-	//~seqAmp.source.postln;
+
 }, "/Slide");
 
 OSCdef(\knobStates, {|msg|
-	//msg[1].postln;
+
 	switch (msg[1],
 		0, {~bassKnobs = msg[2..7];
 			~bassAmp.source = (Pseq([~bassKnobs[4]], inf));
@@ -183,12 +177,7 @@ OSCdef(\knobStates, {|msg|
 	~dmInstRel[msg[1]].source = (Pseq([msg[5]], inf));
 }, "/kStates");
 
-/*~bassAmp.source = (Pseq([0.5], inf));
-~bassAmp.source = (Pseq([0.5], inf));
-~bassKnobs.postln;
-~snareKnobs.postln;
-~snareRate.source = (Pseq([~snareKnobs[5]], inf));
-~snareAmp.source = (Pseq([~snareKnobs[4]], inf));*/
+
 
 
 OSCdef(\StepSeq, { |msg|    /*OSCDefs to fill all array and create sequences for all instruments played via drum machine*/
@@ -196,44 +185,62 @@ OSCdef(\StepSeq, { |msg|    /*OSCDefs to fill all array and create sequences for
 	~stepSeqArray = msg[1..(msg.size-1)];
 	 for(0, ~stepSeqArray.size-1, {|i|
 		if(~stepSeqArray[i] == -1,
-			{~stepSeqArray[i] = Rest},
+			{~stepSeqArray[i] = -1},
 			{~stepSeqArray[i] = ~scale.degrees.wrapAt(msg[i+1])}//~scales.degrees.choose}
 		);
 	});
 
 	~stepSeqDegrees.source = (Pseq(~stepSeqArray, inf));
-	//msg[0].postln;
-	//~bassArray.postln;
-  ~stepSeqArray.postln;
-	//~knobsArray = msg[34..39];
-	//~knobsArray.postln;
+
+	~fullDegrees = Array.newClear(~stepSeqArray.size*~rootNotesArray.size);
+for(0, ~stepSeqArray.size-1, { arg i;
+	for(0, ~rootNotesArray.size-1, { arg j;
+		if(~stepSeqArray[i] == -1, {
+			~fullDegrees[j*~stepSeqArray.size + i] = Rest;
+
+		},
+		{
+
+			~fullDegrees[j*~stepSeqArray.size + i] = (~coreNote+(~stepSeqArray[i] + ~rootNotesArray[j])).linlin(12,120,-48, 60);}
+		);
+	});
+});
+	~fullSeqPatt.source = (Pseq(~fullDegrees, inf));
 
 }, "/StepSeq");
 
-//~stepSeqArray.size;
+
 
 OSCdef(\RootNotes, { |msg|    /*OSCDefs to fill all array and create sequences for all instruments played via drum machine*/
 
 	~rootNotesArray = msg[1..(msg.size-1)];
 	 for(0, ~rootNotesArray.size-1, {|i|
 		if(~rootNotesArray[i] == -1,
-			{~rootNotesArray[i] = Rest},
+			{~rootNotesArray[i] = -1},
 			{~rootNotesArray[i] = ~scale.degrees.wrapAt(msg[i+1])}//~scales.degrees.choose}
 		);
 	});
   //add sequence repeats or trigger for next root
 	~rootNotesDegrees.source = (Pseq(~rootNotesArray.stutter(~stepSeqArray.size), inf));
-	//msg[0].postln;
-	//~bassArray.postln;
-  ~rootNotesArray.postln;
-	//~knobsArray = msg[34..39];
-	//~knobsArray.postln;
+
+	~fullDegrees = Array.newClear(~stepSeqArray.size*~rootNotesArray.size);
+for(0, ~stepSeqArray.size-1, { arg i;
+	for(0, ~rootNotesArray.size-1, { arg j;
+		if(~stepSeqArray[i] == -1, {
+			~fullDegrees[j*~stepSeqArray.size + i] = Rest;
+
+		},
+		{
+
+			~fullDegrees[j*~stepSeqArray.size + i] = (~coreNote+(~stepSeqArray[i] + ~rootNotesArray[j])).linlin(12,120,-48, 60);}
+		);
+	});
+});
+	~fullSeqPatt.source = (Pseq(~fullDegrees, inf));
 
 }, "/RootNotes");
 
 
-/*~rootNotesArray.postln;
-~stepSeqArray.postln;*/
 
 OSCdef(\bass, { |msg|    /*OSCDefs to fill all array and create sequences for all instruments played via drum machine*/
 
@@ -490,13 +497,36 @@ OSCdef(\synth2, { |msg|
 ~stepstep.stop;
 
 //added the function to map coreNote to the way root wants it without octave.  Now need to figure out how to do root changes
-~stepstep =  PmonoArtic(\sawpulse, \dur, 0.125, \degree, ~stepSeqDegrees,  \root, Pfunc{(~coreNote).linlin(12,120,-48, 60);}, \legato, Pfunc{~seqLegato}, \amp, Pfunc{~testSeqAmp} ).play(x, quant: 1);
+~stepstep =  PmonoArtic(\sawpulse, \dur, 0.125, \degree, ~stepSeqDegrees,  \root, ~fullSeqPatt, \legato, Pfunc{~seqLegato}, \amp, Pfunc{~testSeqAmp} ).play(x, quant: 1);
 (~coreNote/12).trunc;
 ~coreNote%12
-~coreNote.postln;
+//~coreNote.postln;
 ~seqRoot = 23;
 ~coreNote = 36;
-60-12
+~rootNotesArray
+~stepSeqArray
+~rootNotesArray;
+
+~rootNotesArray[0]+~stepSeqArray[1];
+~fullDegrees
+(
+~fullDegrees = Array.newClear(~stepSeqArray.size*~rootNotesArray.size);
+for(0, ~stepSeqArray.size-1, { arg i;
+	for(0, ~rootNotesArray.size-1, { arg j;
+		if(~stepSeqArray[i] == -1, {
+			~fullDegrees[j*~stepSeqArray.size + i] = Rest;
+
+		},
+		{
+
+			~fullDegrees[j*~stepSeqArray.size + i] = (~coreNote+(~stepSeqArray[i] + ~rootNotesArray[j])).linlin(12,120,-48, 60);}
+		);
+	});
+});
+//~fullDegrees.postln;
+)
+
+~rootNoteDegrees.source
 ~seqRoot = (~coreNote).linlin(12,120,-48, 60);
 (~coreNote/12).trunc
 \octave, Pfunc{(~coreNote/12).trunc},

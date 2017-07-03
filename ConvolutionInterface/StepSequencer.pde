@@ -164,7 +164,7 @@ class StepSequencer {
  */
  private IntList lastSelectedRootNotes = new IntList();
  
- String[] encModes = {"Column Select", "Synth Select", "BPM", "Random Probability", "BPM Steps", "Scale", "Tempo Multiplier"};
+ String[] encModes = {"Column Select", "Synth Select", "BPM", "Random Probability", "BPM Steps", "Scale", "Root Note", "Tempo Multiplier"};
  
  /*Sets the order of the buttons as laid out on the interface function buttons.  If you add/take away buttons be sure to update this*/
 private int[] buttonOrder =  { TOGGLE , TOGGLE ,TOGGLE , BUTTON, TOGGLE,  BUTTON, TOGGLE};
@@ -1075,8 +1075,24 @@ void updateSeqRowIndex(){
      updateScale();
      cp5.get(Textlabel.class,"seqEncMode").setText("Input Mode: " + encModes[currMode] + ": " + scales[scaleIndex]);
      break;
-     
-     case 6:  //Tempo multiplier
+     case 6:  //Root Note 
+     if(arduino.encChangeFlag){
+       arduino.encChangeFlag = false;
+      if (arduino.rawEnc2[0] < arduino.rawEnc2[1]) lead.coreNote++;
+         else if ( arduino.rawEnc2[0] > arduino.rawEnc2[1]) lead.coreNote--;
+         if (lead.coreNote > 104) lead.coreNote = 104;
+         else if (lead.coreNote < 12) lead.coreNote =12;
+         lead.sendCoreNote(lead.coreNote);
+          OscMessage mMessage = new OscMessage("/StepSeq");
+          int[] activeCellsOut = activeCells.array();      //Make a message object and send it.
+          mMessage.add(activeCellsOut);
+        
+          osc.send(mMessage, address);
+        // musicMaker.sendMatrixOsc();
+     cp5.get(Textlabel.class,"seqEncMode").setText("Input Mode: " + encModes[currMode] + ": " + noteNames[lead.coreNote%12] + lead.coreNote/12);
+     }
+     break;
+     case 7:  //Tempo multiplier
      //cp5.get(Textlabel.class, "RandomProb").show();
      setSeqNoteDuration();
      cp5.get(Textlabel.class,"seqEncMode").setText("Input Mode: " + encModes[currMode] + ": " + seqNoteDur);
