@@ -216,16 +216,16 @@ void setup() {
       .setVisible(false)
       ;
       
-   cp5.addTextlabel("inputMode")
-      .setText("InputMode: " + arduino.getMode(1))
-      .setPosition(width-300, 155)
-      .setSize(tWidth,5)
-      .setColorValue(0xffff00ff)
-      .setFont(createFont("AvenirNext-DemiBold",20))
-      //.setMultiline(true)
-      .setLineHeight(0)
-      .setVisible(true)
-      ;
+   //cp5.addTextlabel("inputMode")
+   //   .setText("InputMode: " + arduino.getMode(1))
+   //   .setPosition(width-300, 155)
+   //   .setSize(tWidth,5)
+   //   .setColorValue(0xffff00ff)
+   //   .setFont(createFont("AvenirNext-DemiBold",20))
+   //   //.setMultiline(true)
+   //   .setLineHeight(0)
+   //   .setVisible(true)
+   //   ;
       
    cp5.addTextlabel("scale")
       .setText("scale: " + scales[scaleIndex])

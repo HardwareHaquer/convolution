@@ -30,7 +30,7 @@ on = OSCdef(\testNoteOn, { |msg|
 	freq.postln;
 	"=============".postln;*/
 
-	notes[~noteOn[1]] = Synth(\am1,[\freq, freq, \modFreq, ~leadKnobs[1], \att, ~leadKnobs[0], \rel, ~leadKnobs[3], \amp, ~leadKnobs[4], \gate, 1, \out, 0], ~srcGroup);
+	notes[~noteOn[1]] = Synth(\am1,[\freq, freq, \modFreq, ~leadKnobs[2], \att, ~leadKnobs[0], \rel, ~leadKnobs[1], \amp, ~leadKnobs[5], \gate, 1, \out, 0], ~srcGroup);
 
 }, "/keyOn");
 
