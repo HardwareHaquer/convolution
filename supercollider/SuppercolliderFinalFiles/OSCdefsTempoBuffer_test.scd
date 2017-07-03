@@ -12,6 +12,8 @@ Scale.names.postln;
 ~mult = 1.0;
 ~testSeqAmp =0.5;
 ~seqLegato = 0.5;
+~seqOctave = 5;
+~seqRoot = 0;
 ~scales = Scale.minor;
 ~scale = Scale.minor;
 ~rootNote = 0;
@@ -135,7 +137,7 @@ OSCdef(\getSlideMode, {|msg|                /*GetBPM listens for BPM message fro
 	~seqLegato = msg[1];
 	//~seqAmp.source =(Pseq([1.0], inf));
 	//~testSeqAmp = msg[1];
-	msg.postln;
+	//msg.postln;
 	//~seqAmp.source.postln;
 }, "/Slide");
 
@@ -195,14 +197,14 @@ OSCdef(\StepSeq, { |msg|    /*OSCDefs to fill all array and create sequences for
 	 for(0, ~stepSeqArray.size-1, {|i|
 		if(~stepSeqArray[i] == -1,
 			{~stepSeqArray[i] = Rest},
-			{~stepSeqArray[i] = msg[i+1]}//~scales.degrees.choose}
+			{~stepSeqArray[i] = ~scale.degrees.wrapAt(msg[i+1])}//~scales.degrees.choose}
 		);
 	});
 
 	~stepSeqDegrees.source = (Pseq(~stepSeqArray, inf));
 	//msg[0].postln;
 	//~bassArray.postln;
-
+  ~stepSeqArray.postln;
 	//~knobsArray = msg[34..39];
 	//~knobsArray.postln;
 
@@ -216,14 +218,14 @@ OSCdef(\RootNotes, { |msg|    /*OSCDefs to fill all array and create sequences f
 	 for(0, ~rootNotesArray.size-1, {|i|
 		if(~rootNotesArray[i] == -1,
 			{~rootNotesArray[i] = Rest},
-			{~rootNotesArray[i] = msg[i+1]}//~scales.degrees.choose}
+			{~rootNotesArray[i] = ~scale.degrees.wrapAt(msg[i+1])}//~scales.degrees.choose}
 		);
 	});
   //add sequence repeats or trigger for next root
 	~rootNotesDegrees.source = (Pseq(~rootNotesArray.stutter(~stepSeqArray.size), inf));
 	//msg[0].postln;
 	//~bassArray.postln;
-
+  ~rootNotesArray.postln;
 	//~knobsArray = msg[34..39];
 	//~knobsArray.postln;
 
@@ -485,6 +487,19 @@ OSCdef(\synth2, { |msg|
 ~stepstep =  PmonoArtic(\sawpulse, \dur, 0.125, \degree, ~stepSeqDegrees, \root, ~rootNotesDegrees, \legato, Pfunc{~seqLegato}, \amp, Pfunc{~testSeqAmp} ).play(x, quant: 1);
 
 )
+~stepstep.stop;
+
+//added the function to map coreNote to the way root wants it without octave.  Now need to figure out how to do root changes
+~stepstep =  PmonoArtic(\sawpulse, \dur, 0.125, \degree, ~stepSeqDegrees,  \root, Pfunc{(~coreNote).linlin(12,120,-48, 60);}, \legato, Pfunc{~seqLegato}, \amp, Pfunc{~testSeqAmp} ).play(x, quant: 1);
+(~coreNote/12).trunc;
+~coreNote%12
+~coreNote.postln;
+~seqRoot = 23;
+~coreNote = 36;
+60-12
+~seqRoot = (~coreNote).linlin(12,120,-48, 60);
+(~coreNote/12).trunc
+\octave, Pfunc{(~coreNote/12).trunc},
 /*(
 ~bass.stop;
 ~conga.stop;
