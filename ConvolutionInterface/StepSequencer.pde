@@ -1073,6 +1073,7 @@ void updateSeqRowIndex(){
      case 5:  //scale
      //cp5.get(Textlabel.class, "RandomProb").show();
      updateScale();
+     //sendOSCmsg();
      cp5.get(Textlabel.class,"seqEncMode").setText("Input Mode: " + encModes[currMode] + ": " + scales[scaleIndex]);
      break;
      case 6:  //Root Note 
@@ -1101,5 +1102,13 @@ void updateSeqRowIndex(){
      default:
      break;
    }
+}
+
+void sendOSCmsg(){
+  OscMessage mMessage = new OscMessage("/StepSeq");
+          int[] activeCellsOut = activeCells.array();      //Make a message object and send it.
+          mMessage.add(activeCellsOut);
+        
+          osc.send(mMessage, address);
 }
 }

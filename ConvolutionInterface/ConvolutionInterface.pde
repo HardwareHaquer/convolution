@@ -24,11 +24,29 @@ int BAUD = 1843200; // baud rate of the serial device
 // the OSC server to talk to
 String HOST = "127.0.0.1";
 int PORT = 57120;
-float cnt = 0;
-int DRUM_MACHINE = 2;
-int LEAD = 1;
+
+//===Tempo values=======
+float cnt = 0;  //to sync current position in drum machine
+int bpm = 30;  //default bpm value
+
+//=======Synth modes=================== 
 int SEQUENCER = 0;
+int LEAD = 1;
+int DRUM_MACHINE = 2;
+int DRONE = 3;  //create variable for new mode
+String[] modeNames = {"Sequencer", "Lead", "Drum Machine", "Drone"};  //When adding new mode add mode name to list.
+//Input mode defaults and total for control via keyboard input.  
+int theMode = 0;
+int lastMode = 0;
+int tModes = 4;  //total number of modes  //update if new modes added
+boolean modeChgFlag = false;
+int mode = 1;  //sequencer mode
+
+
+
 int root = 0;
+
+
 
 Serial port;
 OscP5 osc;
@@ -44,14 +62,16 @@ import java.util.*;
 EnvShaper sup;
 ControlP5 cp5;
 
-StepSequencer musicMaker;
+//---------Define Instruments and modes------------------
+StepSequencer musicMaker;  //step sequencer is specialized object based on drum machine
 
-Instrument bass;
-Instrument lead;
-Instrument[] insts;
+Instrument bass;  
+Instrument lead;  //create a single instance for a mode that only has one instrument
+Instrument drone;  //create Instance of Instrument for new mode
+Instrument[] insts;  //drum machine has several insturments so an array is needed
 EffectsGroup efg;
 
- int BUTTON = 0;
+ int BUTTON = 0;  //convenience variable names for setting order of Buttons and Toggle
  int TOGGLE = 1;
 
 
@@ -91,19 +111,14 @@ String[] funcs = {"setAtk",
                   "setEffect2"
                   };
                   
-int listIndex = 5;
-int lastListIndex = 4;
+int listIndex = 0;  //current drum machine instrument 
+int lastListIndex = 5;  //previous drum machine instrument
 
-//Input mode defaults and total for control via keyboard input.  
-int theMode = 0;
-int lastMode = 0;
-int tModes = 3;  //total number of modes
-boolean modeChgFlag = false;
-int seqRowIndex;
+
+int seqRowIndex;  
 PApplet appletRef;
 //
-int mode = 1;  //sequencer mode
-int bpm = 30;
+
 boolean mFlag = true;
 boolean tFlag = true;
 int nx = 32;
@@ -216,16 +231,6 @@ void setup() {
       .setVisible(false)
       ;
       
-   //cp5.addTextlabel("inputMode")
-   //   .setText("InputMode: " + arduino.getMode(1))
-   //   .setPosition(width-300, 155)
-   //   .setSize(tWidth,5)
-   //   .setColorValue(0xffff00ff)
-   //   .setFont(createFont("AvenirNext-DemiBold",20))
-   //   //.setMultiline(true)
-   //   .setLineHeight(0)
-   //   .setVisible(true)
-   //   ;
       
    cp5.addTextlabel("scale")
       .setText("scale: " + scales[scaleIndex])
@@ -237,43 +242,7 @@ void setup() {
       .setLineHeight(0)
       .setVisible(true)
       ;
-    //String[] toggleNames = {"Adjust_Lock","Mute_All", "Mute_Instrument"};
-    //String[] buttonNames = {"Randomize", "Clear_Instrument", "Clear_Matrix"};
-    //  for(int i = 0; i < toggleNames.length; i++){ 
-    //  cp5.addToggle( toggleNames[i])
-       
-    //   //.setValue( 0.1 )
-    //   .setLabel(toggleNames[i])
-    //   .setPosition(0, 5+i*45)
-    //   .setSize(150, 30)
-       
-    //   ;
-      // cp5.getController(toggleNames[i]).getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER).setPaddingX(0); //getValueLabel().alignX(ControlP5.CENTER);
-      // cp5.getController(toggles[i]).getValueLabel().alignY(ControlP5.CENTER);
-  
-      //}
-      //for(int i = 0; i < buttonNames.length; i++){ 
-      //cp5.addButton( buttonNames[i])
-       
-      // //.setValue( 0.1 )
-      // .setLabel(buttonNames[i])
-      // .setPosition(0, (toggleNames.length)*45 + i*45)
-      // .setSize(150, 30)
-       
-      // ;
-      // cp5.getController(buttonNames[i]).getValueLabel().alignX(ControlP5.CENTER);
-  
-      //}
-      
-     //cp5.addKnob("bpm")
-     //  .setSize(50, 50)
-     //  .setPosition(width-75, 10)
-     //  .setRange(30,240)
-     //  .plugTo(this,"setBPM")
-     //  ;
-        
 
-//  cp5.getController("myMatrix").getCaptionLabel().alignX(CENTER);
   
 
 
@@ -283,6 +252,17 @@ void setup() {
 
   bass = new Instrument("bass", 0);
   lead = new Instrument("lead", -1);
+  
+  String[] droneToggles = {"Drone 1", "Drone 2", "Drone 3", "Mute", "Lock Drone"};
+  String[] droneButtons = {"Button1", "Button2", "Button3"};
+  int[] droneButtOrder = {TOGGLE, TOGGLE, TOGGLE, BUTTON, BUTTON, BUTTON, TOGGLE, TOGGLE};
+  float[][] droneSliderRanges = {{0.0, 1.0}, {30, 10000},{0.0, 1.0},{30, 10000}, {0.0, 1.0},{30, 10000}};  //slider ranges for the instrument
+  float[] droneSliderValues = {0.25, 200, 0.25,200,0.25,200};
+  String[] droneSliderLabels = {"Amplitude 1", "Frequency 1", "Amplitude 2", "Frequency 2", "Amplitude 3", "Frequency 3"};  //labels for the sliders
+  //Instrument(String _theName, int _id, String[] _toggles, String[] _buttons, int[] _buttonOrder, float[][] _sliderRanges, float[] _sliderValues, String[] _sliderLabels){
+  drone = new Instrument("drone", -2, droneToggles, droneButtons, droneButtOrder, droneSliderRanges, droneSliderValues, droneSliderLabels);
+  
+  
   insts = new Instrument[instNames.length];
   for(int i=0; i < instNames.length; i++){
     insts[i] = new Instrument(instNames[i], i);
@@ -290,10 +270,7 @@ void setup() {
   }
   
   setupInstSliders();
- // efg = new EffectsGroup("test", sliderNames, 100,100,500, 300);
- // efg.setupSliders();
-// String[] buttons = {"Mute", "Adjust/Lock", "Clear Insturment", "Clear Matrix", "Save"};
-// bs = new ButtonGroup("Controls", buttonNames, 430, 5, 300,300);
+
 }
 
 
@@ -303,7 +280,11 @@ void draw() {
   theMode = arduino.enc1Mode;
   if(lastMode != theMode) modeChgFlag = true;
   //println(modeChgFlag);
-  
+  if(modeChgFlag){
+    modeChgFlag = false;
+    setMode(theMode);
+    println(theMode);
+  }
   if(theMode == SEQUENCER){// || theMode == SEQUENCER){
     
     dmMode();
@@ -315,8 +296,9 @@ void draw() {
   }
   else if(theMode == DRUM_MACHINE){ // || theMode == DRUM_MACHINE){
     seqMode();
-    
-  
+  } 
+   else if(theMode == DRONE){ // || theMode == DRUM_MACHINE){  //add new mode to list
+    droneMode();
   }else{
     //herein lay the problem
     cp5.getController(musicMaker.matrixName).hide();
@@ -358,6 +340,7 @@ void updateInputMode(){
    cp5.get(Textlabel.class,"inputMode").setText("InputMode: " + arduino.getMode(1));
    arduino.enc2ModeFlg = false;
   }
+ 
    switch(arduino.getMode(1)){
      case 0:
      updateInsturment();
@@ -427,6 +410,14 @@ void shiftRoot(){
   
   
 }
+
+void setMode(int mode){
+  OscMessage setMode = new OscMessage("/setMode");
+  setMode.add(mode);
+  osc.send(setMode, address);
+}
+
+
 void setBPM(){
   OscMessage bpmMsg = new OscMessage( "/bpm" );
   //change BPM
@@ -531,6 +522,8 @@ void plugLeadSliders(int last){
 }
   
 
+
+
 void unPlugSliders(int last){
   for(int i=0; i < sliderNames.length; i++){
   cp5.getController(sliderNames[i]).unplugFrom(insts[last]);
@@ -571,66 +564,7 @@ void setupInstSliders(){
        .setGroup(g1)
        ;
    }
-/*   cp5.addSlider( "attack" )
-       .setRange( 0.0, 5.0 )
-       //.plugTo( this, "setAtk" )
-       .setValue( 0.1 )
-       .setLabel("attack")
-       .setPosition(10,10)
-       .setSize(50, 180)
-       .setGroup(g1)
-       ;
-       
-     cp5.addSlider( "decay" )
-       .setRange( 0.01, 5.0 )
-       //.plugTo( this, "setDcy" )
-       .setValue( 0.5 )
-       .setLabel("Decay")
-       .setPosition(70,10)
-       .setSize(50, 180)
-       .setGroup(g1)
-       ;
-       
-  cp5.addSlider( "sustain" )
-       .setRange( 0.01, 5.0 )
-       //.plugTo( this, "setSus" )
-       .setValue( 0.3 )
-       .setLabel("Sustain")
-       .setPosition(130,10)
-       .setSize(50, 180)
-       .setGroup(g1)
-       ;
-       
- cp5.addSlider( "release" )
-       .setRange( 0.01, 5.0 )
-       //.plugTo( this, "setRel" )
-       .setValue( 1 )
-       .setLabel("Release")
-       .setPosition(190,10)
-       .setSize(50, 180)
-       .setGroup(g1)
-       ;
-       
-  cp5.addSlider( "effect1" )
-       .setRange( 0.0, 1.0 )
-       //.plugTo( this, "setEffect1" )
-       .setValue( 0.6 )
-       .setLabel("Amp")
-       .setPosition(250,10)
-       .setSize(50, 180)
-       .setGroup(g1)
-       ;
-       
-  cp5.addSlider( "effect2" )
-       .setRange( 0.0, 10.0 )
-       //.plugTo( this, "setEffect2" )
-       .setValue( 1.0 )
-       .setLabel("Rate")
-       .setPosition(310,10)
-       .setSize(50, 180)
-       .setGroup(g1)
-       ;
-*/
+
 cp5.addTextlabel("instName")
        .setText("Instrument: " + instNames[listIndex])
        .setPosition(10,250)

@@ -9,6 +9,7 @@ Scale.names.postln;
 ~mult.postln;
 (
 //~stepSeqPatternProxy = PatternProxy(Pn(Pseries(0, 2, 12), inf));
+~theMode = 0;
 ~mult = 1.0;
 ~testSeqAmp =0.5;
 ~seqLegato = 0.5;
@@ -102,7 +103,10 @@ u.schedAbs(0, { arg beat, sec; /*["/tick", beat%32, "hrlp","more"].postln;*/b.se
 	).play(t, quant: 1);*/
 
 //OSCdefs
-
+OSCdef(\getMode, {|msg|
+	~theMode = msg[1];
+	//~theMode.postln;
+}, "/setMode");
 
 OSCdef(\getbpm, {|msg|                /*GetBPM listens for BPM message from Processing*/
 	~mainTempo = msg[1]/60;
@@ -495,9 +499,17 @@ OSCdef(\synth2, { |msg|
 
 )
 ~stepstep.stop;
-
+~synthNames_test = [\sawpulse, \funSynth];
+~synthName = ~synthNames_test[1];
+(
+~stepstep.stop;
 //added the function to map coreNote to the way root wants it without octave.  Now need to figure out how to do root changes
-~stepstep =  PmonoArtic(\sawpulse, \dur, 0.125, \degree, ~stepSeqDegrees,  \root, ~fullSeqPatt, \legato, Pfunc{~seqLegato}, \amp, Pfunc{~testSeqAmp} ).play(x, quant: 1);
+~stepstep =  PmonoArtic(~synthNames_test[1], \dur, 0.125, \degree, ~stepSeqDegrees,  \root, ~fullSeqPatt, \legato, Pfunc{~seqLegato}, \amp, Pfunc{~testSeqAmp} ).play(x, quant: 1);
+)
+(
+~stepstep.stop;
+~stepstep = PmonoArtic(~synthNames_test[0], \dur, 0.125, \degree, ~stepSeqDegrees,  \root, ~fullSeqPatt, \legato, Pfunc{~seqLegato}, \amp, Pfunc{~testSeqAmp} ).play(x, quant: 1);
+)
 (~coreNote/12).trunc;
 ~coreNote%12
 //~coreNote.postln;

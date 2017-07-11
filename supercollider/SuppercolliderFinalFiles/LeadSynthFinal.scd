@@ -30,16 +30,18 @@ on = OSCdef(\testNoteOn, { |msg|
 	freq.postln;
 	"=============".postln;*/
 
-	notes[~noteOn[1]] = Synth(\am1,[\freq, freq, \modFreq, ~leadKnobs[2], \att, ~leadKnobs[0], \rel, ~leadKnobs[1], \amp, ~leadKnobs[5], \gate, 1, \out, 0], ~srcGroup);
+	if(~theMode == 1, {notes[~noteOn[1]] = Synth(\am1,[\freq, freq, \modFreq, ~leadKnobs[2], \att, ~leadKnobs[0], \rel, ~leadKnobs[1], \amp, ~leadKnobs[5], \gate, 1, \out, 0], ~srcGroup);});
 
 }, "/keyOn");
 
 off = OSCdef(\testNoteOff, { |msg|
 	~noteOff = msg;
 	//~noteOff.postln;
+	if(~theMode == 1, {
 	notes[~noteOff[1]].set(\trig, 0);
 	notes[~noteOff[1]].set(\gate, 0);
 	notes[~noteOff[1]].release;
+	});
 	//x.set("trig", 0);
 
 }, "/keyOff");

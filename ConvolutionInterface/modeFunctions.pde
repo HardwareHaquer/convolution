@@ -36,6 +36,40 @@ void seqMode(){
     
 }
 
+void droneMode(){
+  background(0);  //set background and fill colors
+    fill(255,0,255);
+    
+    //turn off visibility of other modes
+  cp5.getController("label").setVisible(false);
+    musicMaker.setVisibility(false);
+    seq.setVisibility(false);
+    cp5.getController("seq").hide();
+    cp5.get(Textlabel.class, "bpm").hide();
+    cp5.get(Textlabel.class, "current").hide();
+    
+    //start making things visible  might be more efficient to only do some tasks once rather than each time loop runs
+    
+    drone.setButtonStates(arduino);  //get the function button states from the arduino
+    drone.setVisibility(true);  //turn on all of the interface elements associated with the Instrument
+    drone.plugSlides(insts[listIndex]); //switch the sliders from the former mode to the current mode
+   // float[][] tempVals = {{0.001, 1.0}, {0.01, 30.0},{0.01, 40.0},{0.05, 5.0}, {0.0, 1.0},{0.1, 1.0}};  //slider ranges for the instrument
+   // String[] tempLabs = {"attack", "Release", "FreqMod", "NA", "NA", "Amplitude"};  //labels for the sliders
+    drone.setSliderRanges(drone.sliderRanges); //set the new ranges
+    drone.setSliderLabels(drone.sliderLabels);  //set the new labels
+    drone.lock=false;  //turn off the lock flag so knobs will update sliders
+    cp5.get(Group.class, "Effects Controls").show();  //show the sliders if they are not already on
+    drone.sendSliders("/droneKnobs");
+    if(arduino.knobFlag){  //update slider values when new values comes in from arduino
+      setGlobalEffects(arduino.smoothKnobs(), sliderNames, drone);
+      drone.sendSliders("/droneKnobs");
+      arduino.knobFlag  = false;
+      
+     }
+    
+    
+}
+
 void leadMode(){
  background(0);
     fill(255,0,255);
@@ -48,6 +82,7 @@ void leadMode(){
       
     //}
     cp5.getController("label").setVisible(false);
+    drone.setVisibility(false);
     musicMaker.setVisibility(false);
     seq.setVisibility(false);
     cp5.getController("seq").hide();
@@ -67,7 +102,7 @@ void leadMode(){
      //sup.disp();
     if(arduino.knobFlag){
       setGlobalEffects(arduino.smoothKnobs(), sliderNames, lead);
-      lead.sendSliders();
+      lead.sendSliders("/leadKnobs");
       arduino.knobFlag  = false;
       
      }
@@ -89,6 +124,7 @@ void dmMode(){
  // println("pad: " + arduino.quadPad[1] + " timeout: " + debounce[1].isFinished());
   musicMaker.setVisibility(false);
   lead.setVisibility(false);
+  drone.setVisibility(false);
   seq.setVisibility(true);
    cp5.getController("seq").show();
   //cp5.getController("seq").bringToFront();

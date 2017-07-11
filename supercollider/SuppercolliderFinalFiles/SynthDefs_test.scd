@@ -65,11 +65,11 @@ SynthDef(\help_sinegrain,
 
 
 SynthDef(\funSynth, {
-	|freq =400, gate=0.5|
+	|freq =400, gate=0.5, sus = 0.1, rel = 0.1, amp = 0.5|
 	var sound = SinOsc.ar(freq, mul: 0.2);
-	var linen = Env.linen(sustainTime: 0.1, releaseTime:0.25);
+	var linen = Env.linen(sustainTime: sus, releaseTime: rel);
 	var env = EnvGen.kr(linen,gate, doneAction: 2);
-	Out.ar(0, sound*env);
+	Out.ar(0, sound*env*amp);
 }).add;
 
 
@@ -102,6 +102,8 @@ SynthDef(\sawpulse, { |out, freq = 440, gate = 0.5, plfofreq = 6, mw = 0, ffreq 
         * amp;
     Out.ar(out, sig ! 2)
 }).add;
+
+
 
 SynthDef.new(\blip, {
 	arg out, fund=300, dens=2, decay=0.2, amp =1;
