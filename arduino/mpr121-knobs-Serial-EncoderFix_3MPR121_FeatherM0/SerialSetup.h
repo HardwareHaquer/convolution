@@ -38,7 +38,7 @@ void sendModeState(EnCode e){
   if(e.getSendFlag()){
     e.setSendFlag(false);
     encButtData = "/mode ";
-    encButtData += String(e.getID()) + " " + String(e.getMode()) + "\n"; 
+    encButtData += String(e.getID()) + " " + String(e.getMode()) + " " + String(e.getRawButt()) + "\n"; 
     Serial.print(encButtData);
   }
 }

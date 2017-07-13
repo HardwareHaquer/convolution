@@ -138,16 +138,7 @@ private int[] buttonOrder;// =  { BUTTON, BUTTON, BUTTON, BUTTON, BUTTON, TOGGLE
     }
        
  }
-  void changeOctave(int mod){
-   int test = lead.coreNote + 12*mod;
-   if ( test >= 0 && test <= 120) lead.coreNote = test;
-   
-   sendCoreNote(lead.coreNote);
-   cp5.get(Textlabel.class,"root").setText("Root Note: " + noteNames[lead.coreNote%12] + lead.coreNote/12);
-  // println("Root Note: " + noteNames[lead.coreNote%12] + lead.coreNote/12);
-   //println(lead.coreNote);
-    
-  }
+  
  
   void record(){
   }
@@ -206,14 +197,7 @@ private int[] buttonOrder;// =  { BUTTON, BUTTON, BUTTON, BUTTON, BUTTON, TOGGLE
     
     //save_State(envPoints);
     }
-   void sendCoreNote(int core){
-       
-      OscMessage mMessage = new OscMessage("/core" );
-      mMessage.add(core);
-    osc.send(mMessage, address);
-   
-    
-   }
+
    void sendSliders(String msgName){
     // if(sliderRate.isFinished()){
       OscMessage outMsg = new OscMessage(msgName);
@@ -352,7 +336,7 @@ void setVisibility(boolean vis){
        funcDebounce[i] = new Timer(500);
      }
  
-     addInstCallbacks(id);
+    // addInstCallbacks(id);
   }
   
   
@@ -455,11 +439,142 @@ void setVisibility(boolean vis){
   }
   
 void setDrone(int theDrone, boolean state){
-  OscMessage setSynth = new OscMessage("/setSynth");
+  OscMessage setSynth = new OscMessage("/setDroneSynth");
   setSynth.add(theDrone);
   if(state) setSynth.add(1);
   else setSynth.add(0);
   osc.send(setSynth, address);
   println("play drone " + theDrone + ": " + state);
 }  
+
+Button[] getButtArray(){
+  return buttArray;
+}
+
+Toggle[] getTogArray(){
+  return togArray;
+}
+}
+
+class LeadSynth extends Instrument{
+  Button[] buttArray;
+  LeadSynth(String _theName, int _id, String[] _toggles, String[] _buttons, int[] _buttonOrder, float[][] _sliderRanges, float[] _sliderValues, String[] _sliderLabels){
+    super( _theName, _id, _toggles, _buttons,  _buttonOrder, _sliderRanges, _sliderValues,_sliderLabels);
+    buttArray = this.getButtArray();
+  }
+     void sendCoreNote(int core){
+       
+      OscMessage mMessage = new OscMessage("/core" );
+      mMessage.add(core);
+    osc.send(mMessage, address);
+   
+    
+   }
+  void changeOctave(int mod){
+   int test = lead.coreNote + 12*mod;
+   if ( test >= 0 && test <= 120) lead.coreNote = test;
+   
+   sendCoreNote(lead.coreNote);
+   cp5.get(Textlabel.class,"root").setText("Root Note: " + noteNames[lead.coreNote%12] + lead.coreNote/12);
+  // println("Root Note: " + noteNames[lead.coreNote%12] + lead.coreNote/12);
+   //println(lead.coreNote);
+    
+  }
+  
+}
+
+class DroneSynth extends Instrument{
+   Button[] buttArray;
+   Toggle[] togArray;
+  DroneSynth(String _theName, int _id, String[] _toggles, String[] _buttons, int[] _buttonOrder, float[][] _sliderRanges, float[] _sliderValues, String[] _sliderLabels){
+    super( _theName, _id, _toggles, _buttons,  _buttonOrder, _sliderRanges, _sliderValues,_sliderLabels);
+    addInstCallbacks(_id);
+    buttArray = this.getButtArray();
+    togArray = this.getTogArray();
+    
+    printArray(togArray);
+  }
+  void setDrone(int theDrone, boolean state){
+    OscMessage setSynth = new OscMessage("/setDroneSynth");
+    setSynth.add(theDrone);
+    if(state) setSynth.add(1);
+    else setSynth.add(0);
+    osc.send(setSynth, address);
+    println("play drone " + theDrone + ": " + state);
+}
+
+  void addInstCallbacks(){
+         //When this button (the send button) is pressed, the program calls the sendMatrixOsc function,
+        //vwhich sends an osc message of the currently selected cells to the synthesizer.
+      
+
+            for(int i = 0; i < buttArray.length; i++){
+              final int temp = i;
+              buttArray[i].addCallback(new CallbackListener() {
+                  public void controlEvent(CallbackEvent tempEvent){
+                  if (tempEvent.getAction() != ControlP5.ACTION_RELEASE){
+                    switch(temp){
+                      case 0:
+                      //changeOctave(1);
+                      //println(buttArray[temp]);
+                      break;
+                      case 1:
+                     // println(buttArray[temp]);
+                      break;
+                      default:
+                      break;
+                    }
+                  }
+                }
+              });
+            }
+            
+            for(int i = 0; i < togArray.length; i++){
+              final int temp = i;
+              
+              togArray[i].addCallback(new CallbackListener() {
+                  public void controlEvent(CallbackEvent tempEvent){
+                  if (tempEvent.getAction() == ControlP5.ACTION_BROADCAST){
+                    boolean dState = false;
+                    switch(temp){
+                      
+                      case 0:
+                     
+                       dState = togArray[temp].getState();
+                     
+                      setDrone(0, dState);
+                      
+                      break;
+                      case 1:
+                     
+                     dState = togArray[temp].getState();
+                      
+                      setDrone(1, dState);
+                      break;
+                      
+                      case 2:
+                      
+                      dState = togArray[temp].getState();
+                     
+                      setDrone(2, dState);
+                      break;
+                      
+                      case 3:
+                      println("mute");
+                      break;
+                      
+                      case 4:
+                      println("lock drone");
+                      break;
+                      
+                      default:
+                      break;
+                    }
+                  }
+                }
+              });
+            }
+           
+  }
+
 }

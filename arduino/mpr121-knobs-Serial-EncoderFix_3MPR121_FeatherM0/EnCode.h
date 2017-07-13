@@ -12,6 +12,7 @@ class EnCode {
 
   volatile int pos;
   volatile int mode;
+  volatile int rawButt;
 
   volatile int buttPinState;
   volatile bool lastButtPinState;
@@ -28,6 +29,7 @@ class EnCode {
   bool getSendFlag();
   void setSendFlag(bool v);
   int getMode();
+  int getRawButt();
   int getID();
   int getButtonState(int nModes);
 };
@@ -45,6 +47,7 @@ EnCode::EnCode(int a, int b, int but, int _id){
   this->dBounce = 50;
   this->lastButtPinState = LOW;
   this->mode = 0;
+  this->rawButt = 0;
   this->sendFlag = true;
   
   pinMode(this->pinA, INPUT_PULLUP); // set pinA as an input, pulled HIGH to the logic voltage (5V or 3.3V for most cases)
@@ -88,6 +91,10 @@ int EnCode::getMode(){
   return this->mode;
 }
 
+int EnCode::getRawButt(){
+  return this->rawButt;
+}
+
 int EnCode::getID(){
   return this->id;
 }
@@ -107,6 +114,7 @@ int EnCode::getButtonState(int nModes){
       
      // if(mode == oMode) mode = vMode;
      // else mode = oMode;
+      rawButt++;
       if(mode < nModes) mode++;
       else mode = 0;
     }

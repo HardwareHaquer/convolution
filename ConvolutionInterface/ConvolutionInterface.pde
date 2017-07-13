@@ -30,19 +30,18 @@ float cnt = 0;  //to sync current position in drum machine
 int bpm = 30;  //default bpm value
 
 //=======Synth modes=================== 
-int SEQUENCER = 0;
+int tModes = 4;  //total number of modes  //update if new modes added
+int theMode = 0;  //current mode start in Sequencer mode
+int lastMode = 0; //previous modes
+int SEQUENCER = 0;  //mode defaults
 int LEAD = 1;
 int DRUM_MACHINE = 2;
 int DRONE = 3;  //create variable for new mode
 String[] modeNames = {"Sequencer", "Lead", "Drum Machine", "Drone"};  //When adding new mode add mode name to list.
 //Input mode defaults and total for control via keyboard input.  
-int theMode = 0;
-int lastMode = 0;
-int tModes = 4;  //total number of modes  //update if new modes added
-boolean modeChgFlag = false;
+
+boolean modeChgFlag = false;  //flag for checking if we have switched modes
 int mode = 1;  //sequencer mode
-
-
 
 int root = 0;
 
@@ -64,7 +63,7 @@ ControlP5 cp5;
 
 //---------Define Instruments and modes------------------
 StepSequencer musicMaker;  //step sequencer is specialized object based on drum machine
-
+DroneSynth extend_test;
 Instrument bass;  
 Instrument lead;  //create a single instance for a mode that only has one instrument
 Instrument drone;  //create Instance of Instrument for new mode
@@ -166,7 +165,7 @@ void setup() {
 
  if(System.getProperty("os.name").equals("Mac OS X")){
    //change value to length-2 to use with mac without serial device attached
-  port = new Serial(this, Serial.list()[Serial.list().length -1], BAUD);
+  port = new Serial(this, Serial.list()[Serial.list().length -2], BAUD);
  }else{
    port = new Serial(this, Serial.list()[Serial.list().length -2], BAUD);
  }
@@ -261,7 +260,7 @@ void setup() {
   String[] droneSliderLabels = {"Amplitude 1", "Frequency 1", "Amplitude 2", "Frequency 2", "Amplitude 3", "Frequency 3"};  //labels for the sliders
   //Instrument(String _theName, int _id, String[] _toggles, String[] _buttons, int[] _buttonOrder, float[][] _sliderRanges, float[] _sliderValues, String[] _sliderLabels){
   drone = new Instrument("drone", -2, droneToggles, droneButtons, droneButtOrder, droneSliderRanges, droneSliderValues, droneSliderLabels);
-  
+  extend_test = new DroneSynth("drone", -3, droneToggles, droneButtons, droneButtOrder, droneSliderRanges, droneSliderValues, droneSliderLabels);
   
   insts = new Instrument[instNames.length];
   for(int i=0; i < instNames.length; i++){
@@ -277,7 +276,7 @@ void setup() {
 void draw() {
   //updateInputMode();
   lastMode = theMode;
-  theMode = arduino.enc1Mode;
+  theMode = arduino.rawEnc1Mode % tModes;
   if(lastMode != theMode) modeChgFlag = true;
   //println(modeChgFlag);
   if(modeChgFlag){

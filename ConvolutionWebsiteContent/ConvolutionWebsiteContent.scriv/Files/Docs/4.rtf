@@ -1,0 +1,39 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1348\cocoasubrtf170
+{\fonttbl\f0\fnil\fcharset0 Cochin;}
+{\colortbl;\red255\green255\blue255;}
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\fi360\sl288\slmult1\pardirnatural
+
+\f0\fs28 \cf0 #Convolution\
+\
+Convolution is an inexpensive, portable, programmable multi-mode synthesizer built using open-source hardware and software.  The goal of this project is to use the synthesizer as a means to introduce middle school and high school kids to interdisciplinary thinking and computer programming with a system that allows for rapid feedback\'96a requirement for maintaining interest in novice coders.\
+\
+The project started around a campfire.  Several friends were playing acoustic instruments while others (who are talented electronic musicians) could not participate.  Knowing how much equipment and power is required to perform electronic music I thought it would be great if there was a battery operated, portable device that they could use to perform.  Most portable speaker systems make concessions of power or audio fidelity for small size.  This being the case Convolution uses devices known as exciters for audio output.  Exciters are transducers that turn any rigid surface into a loudspeaker.  Certain surfaces are better than others and each changes the quality and tonal range of the sound.  Wood, cardboard, foam (oddly enough), and corrugated plastic are the best for a large tonal range and volume.  One of the best ways to use Convolution is to place an acoustic guitar upside down on your lap and then place Convolution on top of the guitar.  I have also found that wooden drawers inverted are also spectacular.\
+\
+The project is built around the Raspberry Pi, the Arduino (the SAMD21 version), Supercollider (a language built specifically built for audio processing and synthesis), and Processing. The interface consists of 6 potentiometers, 24 pads (capacitive touch) split into 8 \'93function\'94 pads and 16 pads to control instrument, two rotary encoders with push buttons, and the official Raspberry Pi 7\'94 Touch Screen.  \
+\
+The Arduino processes and sends all of the interface data to the Raspberry Pi using OSC (Open Sound Control) style messages.  On the Raspberry Pi the Processing sketch has 3 jobs: listening for messages from the Arduino, creating the interface, and sending OSC messages to Supercollider.  Supercollider runs an audio server on the Raspberry PI handling all audio tasks.\
+\
+By default the synth has 3 modes of operation: Leads, Drum Machine, and Step Sequencer.  These different modes can be run concurrently.  In Leads mode the 16 large pads are set up to be degrees in a musical scale.  By default there are 20 different scales to choose from.  Users can also set the root note for the scale and can use two of the function pads to move up and down by octave.  As of this writing the other function pads have not been routed to the audio server.  The 6 potentiometers allow the user to control amplitude, attack, release, etc. for the current Synth.  Features yet to be coded: switch synths through the interface, Switch on and off sustain, route synth through filters.\
+\
+In Drum Machine mode the user currently has a 32 step drum machine with 8 instruments.  The instruments are sample based (wav files) and in the default setup they are samples based on sounds from the Roland TR-808.  Users can add their own samples without much difficulty.  Patterns can be programmed using the 16 full-sized pads.  Turning one of the rotary encoders left or right allows the user to access the second 16 steps.  Each instrument can have playback rate and amplitude adjusted with the potentiometers (settings are locked when you switch instruments).  Users can also change tempo and create random patterns of varying density.   Features yet to be coded:  Ability to create longer or shorter sequences both for the entire machine (up to 192 steps?) and for each instrument, Ability to accent beats, Ability to save and load individual instrument patterns (yeah I know) and apply them to any instrument, Ability to save and load full state of machine (all patterns and potentiometer settings), ability to chain multiple saved sequences together.\
+\
+ In step sequencer mode users can create melodic sequences from 2 to 16 steps in length.  They can also repeat the sequence with different root notes for up to 5 bars.  Much like in Lead mode the Step Sequencer allows the user to choose what scale and root note to use for the sequence.  Tempo can be adjusted in this mode as well and will update the step sequencer and the drum machine.  The step sequencer tempo can also be a multiple (0.0625, 0.125, 0.25,0.5,1,2,4,8) of the base tempo.  The sequencer can either produce discrete notes, or can slide from one note to the next.  Sequences can also be randomized.    Features yet to be coded:  Ability to save and load sequences, Ability to play multiple concurrent sequences (melody and bass line for instance), Ability to play multiple sequences in series, Ability to choose from list of synths.\
+\
+Though this project is intended to run on the Raspberry Pi it also works on Windows/MacOS/Linux.  I have found that coding the sound and building new modes of operation for the synth is easiest on a traditional computer though not impossible through the 480x800 screen attached to the synth.  On the units I have built the Raspberry Pi\'92s HDMI port is accessible and through two changes to the config file on the PI and a reboot the Raspberry Pi can be used to program.\
+\
+The touchscreen works alright.  The library Controlp5 that the interface is written in, does not play nice with touch events.  There is a branch on github that fixes this, but I have been unable to get it to compile.\
+\
+##System wide changes:\
+\
+1. Streamline process of creating new modes of operation.\
+2. Make modes subclasses of the generic Instrument object in Processing.\
+3. Fix Touchscreen/ControlP5 problems, change to G4P(yikes), or create custom buttons, sliders etc(shudder).\
+3. Fix other outstanding bugs.\
+\
+Currently the Raspberry Pi still boots to the desktop.  Though not efficient and using many precious system resources that could go to the audio server it makes using the Raspberry Pi to code Synths much easier.  Likely, a config file will be generated at some point to turn off essential services, boot directly to the command line, auto-launch the software, and set the audio settings as high as possible for the optimum performance.  \
+\
+##Documentation:\
+\
+Documentation is sorely lacking for all three components: the Arduino, Processing, and Supercollider.  Some of the code has inline comments, but there is no centralized place to look through available methods for objects.  That is coming, but I am one person.  \
+\
+There are two primary ways I see people modifying these devices.  First, by creating their own synths, filters, and samples.  All of this is done completely in Supercollider.  The second is by adding a new mode of operation.  Adding a new mode of operation requires the user to make changes in Supercollider (create a file for the new mode and add it to the load function) and it requires a new instance/instances of the Instrument class be created and some other settings be changed in Processing.}

@@ -5,7 +5,9 @@ var notes, on, off;
 ~fxGroup = Group.after(~srcGroup);
 ~ampOscGroup = Group.after(~fxGroup);
 
-
+~leadNames = [\am1, \simpleSine];
+~leadSynths = Array.newClear(~leadNames.size);
+~curSynth=1;
 ~coreNote = 57;
 ~noteOn;
 ~noteOff;
@@ -30,14 +32,17 @@ on = OSCdef(\testNoteOn, { |msg|
 	freq.postln;
 	"=============".postln;*/
 
-	if(~theMode == 1, {notes[~noteOn[1]] = Synth(\am1,[\freq, freq, \modFreq, ~leadKnobs[2], \att, ~leadKnobs[0], \rel, ~leadKnobs[1], \amp, ~leadKnobs[5], \gate, 1, \out, 0], ~srcGroup);});
+	if(~theMode == 1,
+		{
+			notes[~noteOn[1]] = Synth(~leadNames[~curSynth],[\freq, freq, \modFreq, ~leadKnobs[2], \att, ~leadKnobs[0], \rel, ~leadKnobs[1], \amp, ~leadKnobs[5], \gate, 1, \out, 0, \curv, ~leadKnobs[3]], ~srcGroup);});
+		NodeWatcher.register(notes[~noteOn[1]] );
 
 }, "/keyOn");
 
 off = OSCdef(\testNoteOff, { |msg|
 	~noteOff = msg;
 	//~noteOff.postln;
-	if(~theMode == 1, {
+	if(~theMode == 1 && notes[~noteOff[1]].isPlaying, {
 	notes[~noteOff[1]].set(\trig, 0);
 	notes[~noteOff[1]].set(\gate, 0);
 	notes[~noteOff[1]].release;
@@ -80,6 +85,33 @@ OSCdef(\getLeadKnobs, {|msg|
 	//~leadKnobs.postln;
 }, "/leadKnobs");
 
+//This def listens for messages about which drone to turn off or on.
+OSCdef(\setLeadSynth, {|msg|
+
+	~curSynth = ~leadNames[msg[1]];
+	if( ~leadSynths[msg[1]] != nil, {  //if the Synth has been played / added to array
+		if(msg[2] == 0,  //if the toggle state is off
+			{
+				"turning off: ".post;
+				msg[1].postln;
+				~leadSynths[msg[1]].set(\gate, 0);  //close gate: let Synth release
+				~leadSynths[msg[1]].postln;
+			},
+			{  //if the toggle state is on
+				"turned on existing".postln;
+				//~leadSynths[msg[1]] = nil;
+				~leadSynths[msg[1]] = Synth(~leadNames[msg[1]], [\gate, 1, \freq, 500, \amp, 0.5]);  //create Synth and add to array
+				NodeWatcher.register(~leadSynths[msg[1]]);  /*register synth so we can know if it is playing or not so we do not get errors when setting variables with knobs*/
+
+	});},
+		{  //if Synth has never been played
+		"turned on nil".postln;
+		~leadSynths[msg[1]] = Synth(~leadNames[msg[1]], [\gate,1, \freq, 500, \amp, 0.5]);
+		NodeWatcher.register(~leadSynths[msg[1]]);
+
+	});
+}, "/setLeadSynth");  //message name from processing
+)
 
 
 SynthDef("oscnotes", { arg out =0, freq=440, trig=0, pitchMod =0, amp = 0.5, atk=0.01, releaseTime=1;
@@ -107,15 +139,17 @@ SynthDef("am1", {arg freq = 200, modfreq = 5, amp = 0.4, att = 0.01, rel = 3, ga
 }).add;
 )
 
-SynthDef("simpleSine", { arg freq = 440, atk = 0.1, rel=0.3, amp = 0.25, gate = 0.5, curv = -4;
+SynthDef("simpleSine", { arg freq = 440, att = 0.1, rel=0.3, amp = 0.25, gate = 0.5, curv = -4;
 	var sig = SinOsc.ar(freq, 0, 1);
-	var env = Env.perc(atk, rel, curve: curv);
+	var env = Env.perc(att, rel, curve: curv);
 	var gen = EnvGen.kr(env, gate, doneAction:2);
     Out.ar(
         0,
         sig*gen*amp
         )
 }).add;
-
+~theMode;
+~coreNote;
+~scale;
 x=Synth(\simpleSine, [\freq, 300, \curv, -8, \atk, 0.01, \rel, 0.4]);
 x.free;
