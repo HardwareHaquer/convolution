@@ -90,10 +90,13 @@ void leadMode(){
     cp5.get(Textlabel.class, "current").hide();
     lead.setVisibility(true);
     plugLeadSliders(listIndex);
-    float[][] tempVals = {{0.001, 1.0}, {0.01, 30.0},{0.01, 40.0},{0.05, 5.0}, {0.0, 1.0},{0.1, 1.0}};
-    String[] tempLabs = {"attack", "Release", "FreqMod", "NA", "NA", "Amplitude"};
-    lead.setSliderRanges(tempVals);
-    lead.setSliderLabels(tempLabs);
+    float[][] tempVals = {{0.001, 1.0}, {0.001, 15.0},{0.01, 40.0},{-12, 12}, {0.0, 1.0},{0.1, 1.0}};
+    String[] tempLabs = {"attack", "Release", "FreqMod", "Env Curve", "NA", "Amplitude"};
+    lead.setSliderRanges(lead.sliderRanges);
+    
+    lead.setSliderLabels(lead.sliderLabels);
+    //lead.setSliderRanges(tempVals);
+    //lead.setSliderLabels(tempLabs);
     lead.lock=false;
     cp5.get(Group.class, "Effects Controls").show();
     cp5.get(Group.class, "Global Controls").hide();

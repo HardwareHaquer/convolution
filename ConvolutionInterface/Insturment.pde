@@ -17,7 +17,7 @@ class Instrument{
 // Timer sliderRate;
 // int root = 60;
  //EnvShaper env;
- private String[] sliderLabels;
+ String[] sliderLabels;
   /*Sets the order of the buttons as laid out on the interface function buttons.  If you add/take away buttons be sure to update this*/
   
   
@@ -34,8 +34,8 @@ private int[] buttonOrder;// =  { BUTTON, BUTTON, BUTTON, BUTTON, BUTTON, TOGGLE
  *A Toggle button used to switch between the music sequencer mode and the root note mode.
  */
 
- private Button[] buttArray;
- private Toggle[] togArray;
+  Button[] buttArray;
+ Toggle[] togArray;
  
  /* toggle whether or not to update length of sequence */
  private Toggle lockTog;
@@ -83,6 +83,7 @@ private int[] buttonOrder;// =  { BUTTON, BUTTON, BUTTON, BUTTON, BUTTON, TOGGLE
      int bGap = 10;
     bWidth = (width-bGap*(buttonNames.length+1))/buttonNames.length;
    // (width-buttonGap*(totalButtons+2))/totalButtons;
+   println("init butt array");
     buttArray = new Button[buttons.length];
     for(int b = 0; b < buttons.length; b++){
        buttArray[b] =  cp5.addButton(buttons[b])
@@ -307,7 +308,7 @@ void setVisibility(boolean vis){
    for(int i =0; i < buttonOrder.length; i++){  //Use buttonOrder array to set buttonNames to the correct order for getting input from interface.  Allows for changing number of buttons and mixing toggles/buttons
      
      if(buttonOrder[i] == TOGGLE){
-       println("toggle: " + (((bWidth+bGap)*i)+bGap));
+       //println("toggle: " + (((bWidth+bGap)*i)+bGap));
        buttonNames[i] = toggles[cTogg];
        togArray[cTogg] = cp5.addToggle(toggles[cTogg])
     .setPosition((((bWidth+bGap)*i)+bGap),posButton_Y)
@@ -336,7 +337,7 @@ void setVisibility(boolean vis){
        funcDebounce[i] = new Timer(500);
      }
  
-    // addInstCallbacks(id);
+     addInstCallbacks(id);
   }
   
   
@@ -447,6 +448,16 @@ void setDrone(int theDrone, boolean state){
   println("play drone " + theDrone + ": " + state);
 }  
 
+void setSynthMsg(String name, int synth, boolean state){
+  OscMessage setSynth = new OscMessage(name);
+  setSynth.add(synth);
+  if(state) setSynth.add(1);
+  else setSynth.add(0);
+  osc.send(setSynth, address);
+  println("send " + name + synth + ": " + state);
+}  
+  
+
 Button[] getButtArray(){
   return buttArray;
 }
@@ -454,6 +465,25 @@ Button[] getButtArray(){
 Toggle[] getTogArray(){
   return togArray;
 }
+
+     void sendCoreNote(int core){
+       
+      OscMessage mMessage = new OscMessage("/core" );
+      mMessage.add(core);
+    osc.send(mMessage, address);
+   
+    
+   }
+  void changeOctave(int mod){
+   int test = lead.coreNote + 12*mod;
+   if ( test >= 0 && test <= 120) lead.coreNote = test;
+   
+   sendCoreNote(lead.coreNote);
+   cp5.get(Textlabel.class,"root").setText("Root Note: " + noteNames[lead.coreNote%12] + lead.coreNote/12);
+   println("Root Note: " + noteNames[lead.coreNote%12] + lead.coreNote/12);
+   //println(lead.coreNote);
+    
+  }
 }
 
 class LeadSynth extends Instrument{
@@ -484,15 +514,16 @@ class LeadSynth extends Instrument{
 }
 
 class DroneSynth extends Instrument{
-   Button[] buttArray;
-   Toggle[] togArray;
+  // Button[] buttArray;
+  // Toggle[] togArray;
   DroneSynth(String _theName, int _id, String[] _toggles, String[] _buttons, int[] _buttonOrder, float[][] _sliderRanges, float[] _sliderValues, String[] _sliderLabels){
     super( _theName, _id, _toggles, _buttons,  _buttonOrder, _sliderRanges, _sliderValues,_sliderLabels);
+    super.genInit();
     addInstCallbacks(_id);
-    buttArray = this.getButtArray();
-    togArray = this.getTogArray();
+   // buttArray = this.getButtArray();
+    //togArray = this.getTogArray();
     
-    printArray(togArray);
+   
   }
   void setDrone(int theDrone, boolean state){
     OscMessage setSynth = new OscMessage("/setDroneSynth");
@@ -503,14 +534,18 @@ class DroneSynth extends Instrument{
     println("play drone " + theDrone + ": " + state);
 }
 
-  void addInstCallbacks(){
+void set4Real(String name, int theDrone, boolean state){
+  super.setSynthMsg(name, theDrone, state);
+}
+
+  void addDroneCallbacks(Button[] buttArray, Toggle[] togArray){
          //When this button (the send button) is pressed, the program calls the sendMatrixOsc function,
         //vwhich sends an osc message of the currently selected cells to the synthesizer.
-      
+      // printArray(buttArray);
 
-            for(int i = 0; i < buttArray.length; i++){
+            for(int i = 0; i < super.buttArray.length; i++){
               final int temp = i;
-              buttArray[i].addCallback(new CallbackListener() {
+             super.buttArray[i].addCallback(new CallbackListener() {
                   public void controlEvent(CallbackEvent tempEvent){
                   if (tempEvent.getAction() != ControlP5.ACTION_RELEASE){
                     switch(temp){
@@ -529,32 +564,32 @@ class DroneSynth extends Instrument{
               });
             }
             
-            for(int i = 0; i < togArray.length; i++){
+            for(int i = 0; i < super.togArray.length; i++){
               final int temp = i;
-              
-              togArray[i].addCallback(new CallbackListener() {
+              final boolean dState = super.togArray[i].getState();
+              super.togArray[i].addCallback(new CallbackListener() {
                   public void controlEvent(CallbackEvent tempEvent){
                   if (tempEvent.getAction() == ControlP5.ACTION_BROADCAST){
-                    boolean dState = false;
+                   // boolean dState = super.togArray[temp];
                     switch(temp){
                       
                       case 0:
                      
-                       dState = togArray[temp].getState();
+                      // dState = super.togArray[temp].getState();
                      
                       setDrone(0, dState);
                       
                       break;
                       case 1:
                      
-                     dState = togArray[temp].getState();
+                    // dState = togArray[temp].getState();
                       
                       setDrone(1, dState);
                       break;
                       
                       case 2:
                       
-                      dState = togArray[temp].getState();
+                     // dState = togArray[temp].getState();
                      
                       setDrone(2, dState);
                       break;

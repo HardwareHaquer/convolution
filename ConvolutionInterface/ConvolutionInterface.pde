@@ -63,10 +63,10 @@ ControlP5 cp5;
 
 //---------Define Instruments and modes------------------
 StepSequencer musicMaker;  //step sequencer is specialized object based on drum machine
-DroneSynth extend_test;
+Instrument drone;
 Instrument bass;  
 Instrument lead;  //create a single instance for a mode that only has one instrument
-Instrument drone;  //create Instance of Instrument for new mode
+//Instrument drone;  //create Instance of Instrument for new mode
 Instrument[] insts;  //drum machine has several insturments so an array is needed
 EffectsGroup efg;
 
@@ -165,7 +165,7 @@ void setup() {
 
  if(System.getProperty("os.name").equals("Mac OS X")){
    //change value to length-2 to use with mac without serial device attached
-  port = new Serial(this, Serial.list()[Serial.list().length -2], BAUD);
+  port = new Serial(this, Serial.list()[Serial.list().length -1], BAUD);
  }else{
    port = new Serial(this, Serial.list()[Serial.list().length -2], BAUD);
  }
@@ -250,7 +250,16 @@ void setup() {
   instDsplyTime = new Timer(2000);
 
   bass = new Instrument("bass", 0);
-  lead = new Instrument("lead", -1);
+  
+   String[] leadToggles = {"Sustain", "Lock"};
+  String[] leadButtons = {"Octave +", "Octave -", "Major Third", "Minor Thrid", "Fifth"};
+  int[] leadButtOrder = { BUTTON, BUTTON, BUTTON, BUTTON, BUTTON, TOGGLE , TOGGLE};
+  float[][] leadSliderRanges = {{0.001, 1.0}, {0.001, 15.0},{0.01, 40.0},{-12, 12}, {0.0, 1.0},{0.1, 1.0}};
+   float[] leadSliderValues = {0.1,0.5,0.3,0.2,0.6,1.0};
+  String[] leadSliderLabels = {"attack", "Release", "FreqMod", "Env Curve", "NA", "Amplitude"};
+  lead =  new Instrument("lead", -1, leadToggles, leadButtons, leadButtOrder, leadSliderRanges, leadSliderValues, leadSliderLabels);
+    
+ // lead = new Instrument("lead", -1);
   
   String[] droneToggles = {"Drone 1", "Drone 2", "Drone 3", "Mute", "Lock Drone"};
   String[] droneButtons = {"Button1", "Button2", "Button3"};
@@ -260,7 +269,7 @@ void setup() {
   String[] droneSliderLabels = {"Amplitude 1", "Frequency 1", "Amplitude 2", "Frequency 2", "Amplitude 3", "Frequency 3"};  //labels for the sliders
   //Instrument(String _theName, int _id, String[] _toggles, String[] _buttons, int[] _buttonOrder, float[][] _sliderRanges, float[] _sliderValues, String[] _sliderLabels){
   drone = new Instrument("drone", -2, droneToggles, droneButtons, droneButtOrder, droneSliderRanges, droneSliderValues, droneSliderLabels);
-  extend_test = new DroneSynth("drone", -3, droneToggles, droneButtons, droneButtOrder, droneSliderRanges, droneSliderValues, droneSliderLabels);
+ // drone = new DroneSynth("drone", -3, droneToggles, droneButtons, droneButtOrder, droneSliderRanges, droneSliderValues, droneSliderLabels);
   
   insts = new Instrument[instNames.length];
   for(int i=0; i < instNames.length; i++){
@@ -282,7 +291,7 @@ void draw() {
   if(modeChgFlag){
     modeChgFlag = false;
     setMode(theMode);
-    println(theMode);
+   // println(theMode);
   }
   if(theMode == SEQUENCER){// || theMode == SEQUENCER){
     
@@ -686,7 +695,7 @@ void mouseWheel(MouseEvent event) {
   cp5.get(Textlabel.class, "instName2").setText("Instrument: " + instNames[listIndex]);
    unPlugSliders(lastListIndex);
    plugSliders(listIndex, lastListIndex);
-  println(e + " " +listIndex);
+  //println(e + " " +listIndex);
 }
 
 

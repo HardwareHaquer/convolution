@@ -276,7 +276,7 @@ class HardwareInput{
      // println("funcPads: " + funcPads[z-1] + " lastFuncPads: " + lastFuncPads[z-1]);
      if(funcPads[z-1] == true && lastFuncPads[z-1] == false){
        funcStates[z-1] = true;
-       println("hloy fucking shit man shit be workin!!!!!!!!");
+      // println("hloy fucking shit man shit be workin!!!!!!!!");
      }else {
        funcStates[z-1] = false;
      }
