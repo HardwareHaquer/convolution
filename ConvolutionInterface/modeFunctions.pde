@@ -17,11 +17,13 @@ void seqMode(){
   musicMaker.sequencerButtons.update();
   seq.setVisibility(false);
   cp5.getController("seq").hide();
+  cp5.get(Textlabel.class, "instName").hide();
  cp5.get(Textlabel.class, "bpm").hide();
     cp5.get(Textlabel.class, "current").hide();
     cp5.get(Group.class, "Effects Controls").hide();
     cp5.get(Group.class, "Global Controls").hide();
     cp5.get(Textlabel.class, "root").hide();
+     cp5.get(Textlabel.class,"scale").hide();
     
     if(arduino.enc1ChangeFlag){
        arduino.enc1ChangeFlag = false;
@@ -47,7 +49,8 @@ void droneMode(){
     cp5.getController("seq").hide();
     cp5.get(Textlabel.class, "bpm").hide();
     cp5.get(Textlabel.class, "current").hide();
-    
+     cp5.get(Textlabel.class, "instName").hide();
+      cp5.get(Textlabel.class,"scale").hide();
     //start making things visible  might be more efficient to only do some tasks once rather than each time loop runs
     
     drone.setButtonStates(arduino);  //get the function button states from the arduino
@@ -88,6 +91,7 @@ void leadMode(){
     cp5.getController("seq").hide();
     cp5.get(Textlabel.class, "bpm").hide();
     cp5.get(Textlabel.class, "current").hide();
+     cp5.get(Textlabel.class, "instName").hide();
     lead.setVisibility(true);
     plugLeadSliders(listIndex);
     float[][] tempVals = {{0.001, 1.0}, {0.001, 15.0},{0.01, 40.0},{-12, 12}, {0.0, 1.0},{0.1, 1.0}};
@@ -101,6 +105,7 @@ void leadMode(){
     cp5.get(Group.class, "Effects Controls").show();
     cp5.get(Group.class, "Global Controls").hide();
     cp5.get(Textlabel.class, "root").show();
+     cp5.get(Textlabel.class,"scale").show();
     // sup.updateEnvPoints();
      //sup.disp();
     if(arduino.knobFlag){
@@ -130,12 +135,14 @@ void dmMode(){
   drone.setVisibility(false);
   seq.setVisibility(true);
    cp5.getController("seq").show();
+   cp5.get(Textlabel.class, "instName").show();
   //cp5.getController("seq").bringToFront();
  // cp5.getController("seq").updateInternalEvents(this);
   // cp5.getController(musicMaker.matrixName).bringToFront();
   
     cp5.get(Group.class, "Global Controls").hide();
     cp5.get(Textlabel.class, "root").hide();
+     cp5.get(Textlabel.class,"scale").hide();
 
   if(instDisplay){
     if(instDsplyTime.isFinished()){
