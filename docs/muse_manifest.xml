@@ -1,0 +1,33 @@
+<manifest alg="2" build="2015.0.2.310" opt="true" iceEnabled="true" iceMarkupVersion="2" exportTarget="other" domain="https://hardwarehaquer.github.io/convolution" resolutions="1x" timestamp="1501796313150">
+  <folder name="css">
+    <file name="site_global.css" crc="49894374"/>
+    <file name="master_a-master.css" crc="109540009" ref="events:technical:how-to-use:index:contact:downloads:installation-instructions"/>
+    <file name="events.css" crc="8581872" ref="events"/>
+    <file name="technical.css" crc="8581872" ref="technical"/>
+    <file name="how-to-use.css" crc="8581872" ref="how-to-use"/>
+    <file name="index.css" crc="250016976" ref="index"/>
+    <file name="contact.css" crc="8581872" ref="contact"/>
+    <file name="downloads.css" crc="8581872" ref="downloads"/>
+    <file name="installation-instructions.css" crc="8581872" ref="installation-instructions"/>
+  </folder>
+  <folder name="scripts">
+    <file name="jquery-1.8.3.min.js" crc="196614522" ref="index:installation-instructions:downloads:events:contact:technical:how-to-use"/>
+    <file name="museutils.js" crc="275725342" ref="index:installation-instructions:downloads:events:contact:technical:how-to-use"/>
+    <file name="jquery.musemenu.js" crc="4042164668" ref="index:installation-instructions:downloads:events:contact:technical:how-to-use"/>
+    <file name="pie.js" crc="3827607177" ref="index"/>
+    <file name="jquery.watch.js" crc="3999102769" ref="index:installation-instructions:downloads:events:contact:technical:how-to-use"/>
+    <file name="html5shiv.js" crc="4241844378" ref="index:installation-instructions:downloads:events:contact:technical:how-to-use"/>
+  </folder>
+  <folder name="images">
+    <file name="u196-5.png" crc="4272513477" ref="index:installation-instructions:downloads:events:contact:technical:how-to-use"/>
+    <file name="u197-4.png" crc="3924877751" ref="index:installation-instructions:downloads:events:contact:technical:how-to-use"/>
+    <file name="convotopviewweb.png" crc="52261689" seo="true" ref="index"/>
+  </folder>
+  <file name="index.html" crc="354646531" seo="true" mt="1501688821106" redirect="true"/>
+  <file name="installation-instructions.html" crc="3824980523" seo="true" mt="1501687314719" redirect="true"/>
+  <file name="downloads.html" crc="3979339406" seo="true" mt="1501687314719" redirect="true"/>
+  <file name="events.html" crc="21806772" seo="true" mt="1501687314719" redirect="true"/>
+  <file name="contact.html" crc="4091827966" seo="true" mt="1501687314719" redirect="true"/>
+  <file name="technical.html" crc="3953749507" seo="true" mt="1501687314719" redirect="true"/>
+  <file name="how-to-use.html" crc="430200474" seo="true" mt="1501687314720" redirect="true"/>
+</manifest>
